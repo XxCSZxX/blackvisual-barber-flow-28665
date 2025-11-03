@@ -33,7 +33,7 @@ const CalendarBooking = ({ onBookingComplete, onCancel }: CalendarBookingProps) 
     <div className="space-y-6 animate-fade-in">
       <div>
         <h3 className="text-2xl font-bold mb-4">Escolha a data</h3>
-        <div className="flex justify-center bg-secondary rounded-2xl p-4">
+        <div className="flex justify-center bg-secondary rounded-2xl p-6 border border-border/50">
           <Calendar
             mode="single"
             selected={selectedDate}
@@ -62,9 +62,10 @@ const CalendarBooking = ({ onBookingComplete, onCancel }: CalendarBookingProps) 
                   disabled={isBlocked}
                   variant={isSelected ? "default" : "outline"}
                   className={cn(
-                    "font-bold rounded-xl",
-                    isSelected && "bg-accent text-accent-foreground",
-                    isBlocked && "opacity-50 cursor-not-allowed"
+                    "font-bold rounded-xl py-6 transition-all",
+                    isSelected && "bg-accent text-accent-foreground btn-3d scale-105",
+                    !isSelected && !isBlocked && "hover:scale-105 hover:border-accent",
+                    isBlocked && "opacity-30 cursor-not-allowed"
                   )}
                 >
                   {time}
@@ -79,14 +80,14 @@ const CalendarBooking = ({ onBookingComplete, onCancel }: CalendarBookingProps) 
         <Button
           onClick={onCancel}
           variant="outline"
-          className="flex-1 border-border hover:bg-secondary rounded-xl"
+          className="flex-1 border-border hover:bg-secondary rounded-xl py-6"
         >
           Cancelar
         </Button>
         <Button
           onClick={handleConfirm}
           disabled={!selectedDate || !selectedTime}
-          className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90 font-bold rounded-xl"
+          className="flex-1 bg-accent text-accent-foreground hover:bg-accent/95 font-bold rounded-xl py-6 btn-3d disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Adicionar ao carrinho
         </Button>

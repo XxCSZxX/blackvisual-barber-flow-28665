@@ -29,7 +29,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-2xl animate-scale-in">
+      <DialogContent className="bg-card border-border/50 max-w-2xl animate-scale-in shadow-2xl">
         {service && (
           <>
             <DialogHeader>
@@ -37,7 +37,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
             </DialogHeader>
 
             <div className="space-y-6">
-              <div className="aspect-video rounded-2xl overflow-hidden">
+              <div className="aspect-video rounded-2xl overflow-hidden border border-border/50">
                 <img
                   src={service.image}
                   alt={service.title}
@@ -46,14 +46,14 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
               </div>
 
               <div>
-                <p className="text-muted-foreground mb-4">{service.description}</p>
-                <div className="text-metallic text-4xl font-black">
+                <p className="text-muted-foreground mb-4 text-lg">{service.description}</p>
+                <div className="text-metallic text-4xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
                   R$ {service.price.toFixed(2)}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground">
+              <div className="space-y-3">
+                <Label htmlFor="name" className="text-foreground text-base">
                   Seu nome
                 </Label>
                 <Input
@@ -61,14 +61,14 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite seu nome"
-                  className="bg-secondary border-border text-foreground"
+                  className="bg-secondary border-border/50 text-foreground py-6 text-base focus:border-accent transition-colors"
                 />
               </div>
 
               <Button
                 onClick={handleProceed}
                 disabled={!name.trim()}
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-lg py-6 rounded-xl"
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-lg py-7 rounded-xl btn-3d disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Agendar este corte
               </Button>

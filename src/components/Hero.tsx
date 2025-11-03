@@ -49,7 +49,7 @@ const Hero = () => {
             <Button
               size="lg"
               onClick={scrollToServices}
-              className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-8 py-6 rounded-2xl font-bold shadow-2xl hover:shadow-accent/50 transition-all hover:scale-105"
+              className="bg-accent text-accent-foreground hover:bg-accent/95 text-lg px-10 py-7 rounded-2xl font-bold btn-3d transition-all hover:scale-105"
             >
               Agendar agora
             </Button>

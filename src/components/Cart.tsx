@@ -48,11 +48,11 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
       <SheetTrigger asChild>
         <Button
           size="icon"
-          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 w-14 h-14 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 shadow-2xl animate-pulse-glow"
+          className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 w-16 h-16 rounded-full bg-accent text-accent-foreground hover:bg-accent/95 btn-3d hover:scale-110 transition-all"
         >
-          <ShoppingCart className="w-6 h-6" />
+          <ShoppingCart className="w-7 h-7" />
           {items.length > 0 && (
-            <Badge className="absolute -top-2 -right-2 w-6 h-6 flex items-center justify-center p-0 bg-destructive text-destructive-foreground">
+            <Badge className="absolute -top-2 -right-2 w-7 h-7 flex items-center justify-center p-0 bg-destructive text-destructive-foreground font-bold animate-pulse">
               {items.length}
             </Badge>
           )}
@@ -109,7 +109,7 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
 
                 <Button
                   onClick={handleFinish}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-lg py-6 rounded-xl"
+                  className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-lg py-7 rounded-xl btn-3d"
                 >
                   Finalizar no WhatsApp
                 </Button>
