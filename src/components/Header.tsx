@@ -1,0 +1,78 @@
+import { Instagram, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+const Header = () => {
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    element?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const NavLinks = () => (
+    <>
+      <button
+        onClick={() => scrollToSection("servicos")}
+        className="text-foreground hover:text-accent transition-colors"
+      >
+        Serviços
+      </button>
+      <button
+        onClick={() => scrollToSection("sobre")}
+        className="text-foreground hover:text-accent transition-colors"
+      >
+        Sobre
+      </button>
+      <button
+        onClick={() => scrollToSection("contato")}
+        className="text-foreground hover:text-accent transition-colors"
+      >
+        Contato
+      </button>
+    </>
+  );
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-border">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tighter">
+            Blackvisual
+          </h1>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            <NavLinks />
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <a
+            href="https://instagram.com/Blackbaber"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground hover:text-accent transition-colors"
+            aria-label="Instagram"
+          >
+            <Instagram className="w-5 h-5" />
+          </a>
+
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="w-6 h-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="bg-card border-border">
+              <nav className="flex flex-col gap-6 mt-8">
+                <NavLinks />
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

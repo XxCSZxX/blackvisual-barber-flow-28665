@@ -1,12 +1,199 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import Loader3D from "@/components/Loader3D";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import ServiceCard from "@/components/ServiceCard";
+import ServiceModal from "@/components/ServiceModal";
+import CalendarBooking from "@/components/CalendarBooking";
+import Cart from "@/components/Cart";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import SuccessCheck from "@/components/SuccessCheck";
+import Footer from "@/components/Footer";
+
+// Import images
+import corteModerno from "@/assets/corte-masculino.jpg";
+import degradePerfeito from "@/assets/degrade-perfeito.jpg";
+import barbaVip from "@/assets/barba-vip.jpg";
+
+interface Service {
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  slug: string;
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  customerName: string;
+  price: number;
+  date: Date;
+  time: string;
+  image: string;
+}
+
+const services: Service[] = [
+  {
+    title: "Corte Masculino Moderno",
+    description: "Corte estiloso e personalizado para seu visual",
+    price: 60.0,
+    image: corteModerno,
+    slug: "corte-masculino",
+  },
+  {
+    title: "Degradê Perfeito",
+    description: "Técnica profissional para um degradê impecável",
+    price: 80.0,
+    image: degradePerfeito,
+    slug: "degrade-perfeito",
+  },
+  {
+    title: "Barba VIP",
+    description: "Tratamento completo e modelagem da barba",
+    price: 40.0,
+    image: barbaVip,
+    slug: "barba-vip",
+  },
+];
 
 const Index = () => {
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState<{
+    name: string;
+    service: Service;
+  } | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleSelectService = (slug: string) => {
+    const service = services.find((s) => s.slug === slug);
+    if (service) {
+      setSelectedService(service);
+      setShowModal(true);
+    }
+  };
+
+  const handleProceedToCalendar = (name: string, service: Service) => {
+    setCurrentBooking({ name, service });
+    setShowModal(false);
+    setShowCalendar(true);
+  };
+
+  const handleBookingComplete = (date: Date, time: string) => {
+    if (currentBooking) {
+      const newItem: CartItem = {
+        id: `${Date.now()}`,
+        name: currentBooking.service.title,
+        customerName: currentBooking.name,
+        price: currentBooking.service.price,
+        date,
+        time,
+        image: currentBooking.service.image,
+      };
+
+      setCartItems([...cartItems, newItem]);
+      setShowCalendar(false);
+      setCurrentBooking(null);
+    }
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const handleFinishBooking = () => {
+    setShowSuccess(true);
+  };
+
+  const handleSuccessComplete = () => {
+    setShowSuccess(false);
+    setCartItems([]);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <Loader3D />
+      <Header />
+      <Hero />
+
+      {/* Services Section */}
+      <section id="servicos" className="py-20 bg-gradient-to-b from-card to-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-black mb-4">Nossos Serviços</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Escolha seu corte e agende online em poucos cliques
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+            {services.map((service, index) => (
+              <div
+                key={service.slug}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <ServiceCard {...service} onSelect={handleSelectService} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section id="sobre" className="py-20 bg-card">
+        <div className="container mx-auto px-4 text-center max-w-4xl">
+          <h2 className="text-4xl md:text-5xl font-black mb-6">Sobre a Blackvisual</h2>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+            Somos uma barbearia premium especializada em cortes masculinos modernos,
+            oferecendo atendimento de qualidade e ambiente exclusivo para homens que
+            buscam estilo e profissionalismo em Brasília/Goiânia.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+            <div className="space-y-2">
+              <div className="text-4xl font-black text-metallic">5+</div>
+              <p className="text-muted-foreground">Anos de experiência</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-black text-metallic">1000+</div>
+              <p className="text-muted-foreground">Clientes satisfeitos</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-black text-metallic">100%</div>
+              <p className="text-muted-foreground">Profissionalismo</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+
+      {/* Modals and Components */}
+      <ServiceModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        service={selectedService}
+        onProceed={handleProceedToCalendar}
+      />
+
+      {showCalendar && currentBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4">
+          <div className="bg-card rounded-3xl p-6 md:p-8 max-w-4xl w-full border border-border">
+            <h2 className="text-3xl font-black mb-6">Agendar: {currentBooking.service.title}</h2>
+            <CalendarBooking
+              onBookingComplete={handleBookingComplete}
+              onCancel={() => setShowCalendar(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      <Cart items={cartItems} onRemoveItem={handleRemoveItem} onFinish={handleFinishBooking} />
+      <WhatsAppButton />
+      <SuccessCheck isVisible={showSuccess} onComplete={handleSuccessComplete} />
     </div>
   );
 };
