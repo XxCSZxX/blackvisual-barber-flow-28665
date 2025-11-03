@@ -25,31 +25,31 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-card">
+    <section className="relative min-h-[calc(100vh-3.5rem)] md:min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-card">
       {/* Animated background elements */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-accent rounded-full blur-3xl animate-pulse-glow"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }}></div>
+        <div className="absolute top-1/4 left-1/4 w-48 md:w-64 h-48 md:h-64 bg-accent rounded-full blur-3xl animate-pulse-glow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 md:w-96 h-64 md:h-96 bg-accent rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }}></div>
       </div>
 
       <div className="relative z-10 container mx-auto px-4 text-center">
-        <div className="max-w-4xl mx-auto space-y-8 animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-black leading-tight">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black leading-tight">
             <span className="inline-block min-h-[1.2em]">
               {displayText}
-              <span className="inline-block w-1 h-[0.9em] bg-accent ml-1 animate-blink align-middle"></span>
+              <span className="inline-block w-0.5 md:w-1 h-[0.9em] bg-accent ml-1 animate-blink align-middle"></span>
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto px-4">
             Agende online. Atendimento premium. Visual 3D moderno.
           </p>
 
-          <div className="pt-6">
+          <div className="pt-4 md:pt-6">
             <Button
               size="lg"
               onClick={scrollToServices}
-              className="bg-accent text-accent-foreground hover:bg-accent/95 text-lg px-10 py-7 rounded-2xl font-bold btn-3d transition-all hover:scale-105"
+              className="bg-accent text-accent-foreground hover:bg-accent/95 text-base md:text-lg px-8 md:px-10 py-6 md:py-7 rounded-2xl font-bold btn-3d transition-all hover:scale-105"
             >
               Agendar agora
             </Button>
@@ -58,9 +58,9 @@ const Hero = () => {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-accent rounded-full flex items-start justify-center p-2">
-          <div className="w-1 h-3 bg-accent rounded-full"></div>
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-5 md:w-6 h-8 md:h-10 border-2 border-accent rounded-full flex items-start justify-center p-1.5 md:p-2">
+          <div className="w-0.5 md:w-1 h-2 md:h-3 bg-accent rounded-full"></div>
         </div>
       </div>
     </section>

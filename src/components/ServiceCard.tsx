@@ -21,19 +21,19 @@ const ServiceCard = ({ title, description, price, image, slug, onSelect }: Servi
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-4 md:p-6 space-y-3 md:space-y-4">
         <div>
-          <h3 className="text-2xl font-bold text-foreground mb-2 group-hover:text-accent transition-colors duration-300">{title}</h3>
-          <p className="text-muted-foreground text-sm">{description}</p>
+          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1 md:mb-2 group-hover:text-accent transition-colors duration-300">{title}</h3>
+          <p className="text-muted-foreground text-xs md:text-sm">{description}</p>
         </div>
 
-        <div className="flex items-center justify-between pt-2">
-          <span className="text-metallic text-3xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
+        <div className="flex items-center justify-between pt-1 md:pt-2">
+          <span className="text-metallic text-2xl md:text-3xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
             R$ {price.toFixed(2)}
           </span>
           <Button
             onClick={() => onSelect(slug)}
-            className="bg-accent text-accent-foreground hover:bg-accent/95 font-bold rounded-xl px-6 py-5 btn-3d hover:scale-105 transition-all"
+            className="bg-accent text-accent-foreground hover:bg-accent/95 font-bold rounded-xl px-4 md:px-6 py-4 md:py-5 text-sm md:text-base btn-3d hover:scale-105 transition-all"
           >
             Escolher
           </Button>

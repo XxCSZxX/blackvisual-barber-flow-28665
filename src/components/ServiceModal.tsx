@@ -33,10 +33,10 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
         {service && (
           <>
             <DialogHeader>
-              <DialogTitle className="text-3xl font-black">{service.title}</DialogTitle>
+              <DialogTitle className="text-2xl md:text-3xl font-black">{service.title}</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-6">
+            <div className="space-y-4 md:space-y-6">
               <div className="aspect-video rounded-2xl overflow-hidden border border-border/50">
                 <img
                   src={service.image}
@@ -46,14 +46,14 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
               </div>
 
               <div>
-                <p className="text-muted-foreground mb-4 text-lg">{service.description}</p>
-                <div className="text-metallic text-4xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
+                <p className="text-muted-foreground mb-3 md:mb-4 text-base md:text-lg">{service.description}</p>
+                <div className="text-metallic text-3xl md:text-4xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
                   R$ {service.price.toFixed(2)}
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="name" className="text-foreground text-base">
+              <div className="space-y-2 md:space-y-3">
+                <Label htmlFor="name" className="text-foreground text-sm md:text-base">
                   Seu nome
                 </Label>
                 <Input
@@ -61,14 +61,14 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite seu nome"
-                  className="bg-secondary border-border/50 text-foreground py-6 text-base focus:border-accent transition-colors"
+                  className="bg-secondary border-border/50 text-foreground py-5 md:py-6 text-sm md:text-base focus:border-accent transition-colors"
                 />
               </div>
 
               <Button
                 onClick={handleProceed}
                 disabled={!name.trim()}
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-lg py-7 rounded-xl btn-3d disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-base md:text-lg py-6 md:py-7 rounded-xl btn-3d disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Agendar este corte
               </Button>

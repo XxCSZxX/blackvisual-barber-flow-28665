@@ -59,68 +59,70 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
         </Button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="w-full sm:max-w-lg bg-card border-border animate-slide-in-right overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:max-w-lg bg-card border-border animate-slide-in-right overflow-y-auto flex flex-col">
         <SheetHeader>
-          <SheetTitle className="text-2xl font-black">Seu carrinho</SheetTitle>
+          <SheetTitle className="text-xl md:text-2xl font-black">Seu carrinho</SheetTitle>
         </SheetHeader>
 
-        <div className="mt-8 space-y-4">
+        <div className="mt-6 md:mt-8 space-y-3 md:space-y-4 flex-1 overflow-y-auto">
           {items.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>Seu carrinho está vazio</p>
+              <ShoppingCart className="w-12 md:w-16 h-12 md:h-16 mx-auto mb-4 opacity-50" />
+              <p className="text-sm md:text-base">Seu carrinho está vazio</p>
             </div>
           ) : (
             <>
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex gap-4 p-4 bg-secondary rounded-2xl border border-border animate-scale-in"
+                  className="flex gap-3 md:gap-4 p-3 md:p-4 bg-secondary rounded-2xl border border-border animate-scale-in"
                 >
                   <img
                     src={item.image}
                     alt={item.name}
-                    className="w-20 h-20 rounded-xl object-cover"
+                    className="w-16 md:w-20 h-16 md:h-20 rounded-xl object-cover flex-shrink-0"
                   />
-                  <div className="flex-1 space-y-1">
-                    <h4 className="font-bold text-foreground">{item.name}</h4>
-                    <p className="text-sm text-muted-foreground">{item.customerName}</p>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="flex-1 space-y-0.5 md:space-y-1 min-w-0">
+                    <h4 className="font-bold text-foreground text-sm md:text-base truncate">{item.name}</h4>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">{item.customerName}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">
                       {format(item.date, "dd/MM/yyyy", { locale: ptBR })} às {item.time}
                     </p>
-                    <p className="text-metallic font-bold">R$ {item.price.toFixed(2)}</p>
+                    <p className="text-metallic font-bold text-sm md:text-base">R$ {item.price.toFixed(2)}</p>
                   </div>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => onRemoveItem(item.id)}
-                    className="hover:bg-destructive/20 hover:text-destructive"
+                    className="hover:bg-destructive/20 hover:text-destructive flex-shrink-0 h-8 w-8 md:h-10 md:w-10"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3 h-3 md:w-4 md:h-4" />
                   </Button>
                 </div>
               ))}
-
-              <div className="border-t border-border pt-4 space-y-4">
-                <div className="flex justify-between items-center text-xl font-bold">
-                  <span>Total:</span>
-                  <span className="text-metallic text-2xl">R$ {total.toFixed(2)}</span>
-                </div>
-
-                <Button
-                  onClick={handleFinish}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-lg py-7 rounded-xl btn-3d"
-                >
-                  Finalizar no WhatsApp
-                </Button>
-
-                <p className="text-xs text-center text-muted-foreground">
-                  Você será redirecionado para o WhatsApp para confirmar seu agendamento
-                </p>
-              </div>
             </>
           )}
         </div>
+
+        {items.length > 0 && (
+          <div className="border-t border-border pt-4 space-y-3 md:space-y-4 mt-4 bg-card">
+            <div className="flex justify-between items-center text-lg md:text-xl font-bold">
+              <span className="text-sm md:text-base">Total:</span>
+              <span className="text-metallic text-xl md:text-2xl">R$ {total.toFixed(2)}</span>
+            </div>
+
+            <Button
+              onClick={handleFinish}
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-base md:text-lg py-6 md:py-7 rounded-xl btn-3d"
+            >
+              Finalizar no WhatsApp
+            </Button>
+
+            <p className="text-xs text-center text-muted-foreground px-2">
+              Você será redirecionado para o WhatsApp para confirmar seu agendamento
+            </p>
+          </div>
+        )}
       </SheetContent>
     </Sheet>
   );

@@ -33,19 +33,19 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-border">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <h1 className="text-2xl md:text-3xl font-black text-foreground tracking-tighter">
+      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
+        <div className="flex items-center gap-4 md:gap-8">
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-foreground tracking-tighter">
             Blackvisual
           </h1>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-4 lg:gap-6 text-sm lg:text-base">
             <NavLinks />
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 md:gap-4">
           <a
             href="https://instagram.com/Blackbaber"
             target="_blank"
@@ -53,18 +53,18 @@ const Header = () => {
             className="text-foreground hover:text-accent transition-colors"
             aria-label="Instagram"
           >
-            <Instagram className="w-5 h-5" />
+            <Instagram className="w-5 h-5 md:w-6 md:h-6" />
           </a>
 
           {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="w-6 h-6" />
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="bg-card border-border">
-              <nav className="flex flex-col gap-6 mt-8">
+              <nav className="flex flex-col gap-6 mt-8 text-lg">
                 <NavLinks />
               </nav>
             </SheetContent>

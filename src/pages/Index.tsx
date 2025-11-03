@@ -114,7 +114,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14 md:pt-16">
       <Loader3D />
       <Header />
       <Hero />
@@ -122,9 +122,9 @@ const Index = () => {
       {/* Services Section */}
       <section id="servicos" className="py-20 bg-gradient-to-b from-card to-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-black mb-4">Nossos Serviços</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <div className="text-center mb-8 md:mb-12 animate-fade-in">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-4">Nossos Serviços</h2>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
               Escolha seu corte e agende online em poucos cliques
             </p>
           </div>
@@ -146,24 +146,24 @@ const Index = () => {
       {/* About Section */}
       <section id="sobre" className="py-20 bg-card">
         <div className="container mx-auto px-4 text-center max-w-4xl">
-          <h2 className="text-4xl md:text-5xl font-black mb-6">Sobre a Blackvisual</h2>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6">Sobre a Blackvisual</h2>
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6 md:mb-8">
             Somos uma barbearia premium especializada em cortes masculinos modernos,
             oferecendo atendimento de qualidade e ambiente exclusivo para homens que
             buscam estilo e profissionalismo em Brasília/Goiânia.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
             <div className="space-y-2">
-              <div className="text-4xl font-black text-metallic">5+</div>
-              <p className="text-muted-foreground">Anos de experiência</p>
+              <div className="text-3xl md:text-4xl font-black text-metallic">5+</div>
+              <p className="text-sm md:text-base text-muted-foreground">Anos de experiência</p>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-black text-metallic">1000+</div>
-              <p className="text-muted-foreground">Clientes satisfeitos</p>
+              <div className="text-3xl md:text-4xl font-black text-metallic">1000+</div>
+              <p className="text-sm md:text-base text-muted-foreground">Clientes satisfeitos</p>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-black text-metallic">100%</div>
-              <p className="text-muted-foreground">Profissionalismo</p>
+              <div className="text-3xl md:text-4xl font-black text-metallic">100%</div>
+              <p className="text-sm md:text-base text-muted-foreground">Profissionalismo</p>
             </div>
           </div>
         </div>
@@ -180,9 +180,11 @@ const Index = () => {
       />
 
       {showCalendar && currentBooking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4">
-          <div className="bg-card rounded-3xl p-6 md:p-8 max-w-4xl w-full border border-border">
-            <h2 className="text-3xl font-black mb-6">Agendar: {currentBooking.service.title}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-card rounded-3xl p-4 md:p-8 max-w-4xl w-full border border-border my-auto max-h-[95vh] overflow-y-auto">
+            <h2 className="text-xl md:text-3xl font-black mb-4 md:mb-6 sticky top-0 bg-card pb-2 md:pb-4 border-b border-border/50">
+              Agendar: {currentBooking.service.title}
+            </h2>
             <CalendarBooking
               onBookingComplete={handleBookingComplete}
               onCancel={() => setShowCalendar(false)}
