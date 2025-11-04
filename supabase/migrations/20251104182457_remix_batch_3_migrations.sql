@@ -1,4 +1,6 @@
 
+-- Migration: 20251104151821
+
 -- Migration: 20251104005050
 
 -- Migration: 20251104003725
@@ -270,3 +272,55 @@ CREATE TRIGGER update_discount_coupons_updated_at
 BEFORE UPDATE ON public.discount_coupons
 FOR EACH ROW
 EXECUTE FUNCTION public.handle_updated_at();
+
+
+-- Migration: 20251104152205
+-- Create storage policies for service-images bucket
+-- Allow authenticated admins to upload service images
+CREATE POLICY "Admins can upload service images"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'service-images' 
+  AND (storage.foldername(name))[1] = 'service-images'
+  AND has_role(auth.uid(), 'admin'::app_role)
+);
+
+-- Allow authenticated admins to update service images
+CREATE POLICY "Admins can update service images"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'service-images'
+  AND has_role(auth.uid(), 'admin'::app_role)
+);
+
+-- Allow authenticated admins to delete service images
+CREATE POLICY "Admins can delete service images"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'service-images'
+  AND has_role(auth.uid(), 'admin'::app_role)
+);
+
+-- Allow everyone to view service images (public bucket)
+CREATE POLICY "Anyone can view service images"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'service-images');
+
+-- Migration: 20251104152750
+-- Fix storage policy to allow root-level uploads in service-images bucket
+ALTER POLICY "Admins can upload service images"
+ON storage.objects
+WITH CHECK (
+  bucket_id = 'service-images'
+  AND has_role(auth.uid(), 'admin'::app_role)
+);
+
+-- Ensure update/delete policies remain constrained to the bucket and admin role (idempotent redefinitions are not supported with ALTER for USING in Postgres 14 for storage schema specifics, but they are already correct).;
