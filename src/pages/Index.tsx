@@ -11,6 +11,18 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import SuccessCheck from "@/components/SuccessCheck";
 import Footer from "@/components/Footer";
 
+// Import images
+import corteModerno from "@/assets/corte-masculino.jpg";
+import degradePerfeito from "@/assets/degrade-perfeito.jpg";
+import barbaVip from "@/assets/barba-vip.jpg";
+
+// Map image slugs to imported images
+const imageMap: Record<string, string> = {
+  "corte-masculino.jpg": corteModerno,
+  "degrade-perfeito.jpg": degradePerfeito,
+  "barba-vip.jpg": barbaVip,
+};
+
 interface Service {
   title: string;
   description: string;
@@ -58,7 +70,7 @@ const Index = () => {
           title: s.title,
           description: s.description,
           price: Number(s.price),
-          image: s.image,
+          image: imageMap[s.image] || s.image, // Use mapped image or fallback to DB path
           slug: s.slug,
         }))
       );
