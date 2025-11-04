@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import Loader3D from "@/components/Loader3D";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -9,11 +10,6 @@ import Cart from "@/components/Cart";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SuccessCheck from "@/components/SuccessCheck";
 import Footer from "@/components/Footer";
-
-// Import images
-import corteModerno from "@/assets/corte-masculino.jpg";
-import degradePerfeito from "@/assets/degrade-perfeito.jpg";
-import barbaVip from "@/assets/barba-vip.jpg";
 
 interface Service {
   title: string;
@@ -33,31 +29,8 @@ interface CartItem {
   image: string;
 }
 
-const services: Service[] = [
-  {
-    title: "Corte Masculino Moderno",
-    description: "Corte estiloso e personalizado para seu visual",
-    price: 60.0,
-    image: corteModerno,
-    slug: "corte-masculino",
-  },
-  {
-    title: "Degradê Perfeito",
-    description: "Técnica profissional para um degradê impecável",
-    price: 80.0,
-    image: degradePerfeito,
-    slug: "degrade-perfeito",
-  },
-  {
-    title: "Barba VIP",
-    description: "Tratamento completo e modelagem da barba",
-    price: 40.0,
-    image: barbaVip,
-    slug: "barba-vip",
-  },
-];
-
 const Index = () => {
+  const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -67,6 +40,30 @@ const Index = () => {
   } | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    loadServices();
+  }, []);
+
+  const loadServices = async () => {
+    const { data } = await supabase
+      .from("services")
+      .select("*")
+      .eq("active", true)
+      .order("created_at");
+
+    if (data) {
+      setServices(
+        data.map((s) => ({
+          title: s.title,
+          description: s.description,
+          price: Number(s.price),
+          image: s.image,
+          slug: s.slug,
+        }))
+      );
+    }
+  };
 
   const handleSelectService = (slug: string) => {
     const service = services.find((s) => s.slug === slug);

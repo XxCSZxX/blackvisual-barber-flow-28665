@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,15 +14,26 @@ interface CalendarBookingProps {
 const CalendarBooking = ({ onBookingComplete, onCancel }: CalendarBookingProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
-
-  // Available time slots (can be configured)
-  const timeSlots = [
-    "09:00", "10:00", "11:00", "12:00",
-    "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"
-  ];
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
 
   // Simulated blocked times (would come from backend)
   const blockedTimes = ["11:00", "15:00"];
+
+  useEffect(() => {
+    loadTimeSlots();
+  }, []);
+
+  const loadTimeSlots = async () => {
+    const { data } = await supabase
+      .from("time_slots")
+      .select("time")
+      .eq("active", true)
+      .order("display_order");
+
+    if (data) {
+      setTimeSlots(data.map((slot) => slot.time));
+    }
+  };
 
   const handleConfirm = () => {
     if (selectedDate && selectedTime) {

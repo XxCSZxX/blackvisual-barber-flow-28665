@@ -1,6 +1,7 @@
-import { Instagram, Menu } from "lucide-react";
+import { Instagram, Menu, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const scrollToSection = (id: string) => {
@@ -46,6 +47,14 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-3 md:gap-4">
+          <Link
+            to="/auth"
+            className="text-muted-foreground hover:text-accent transition-colors"
+            aria-label="Admin"
+          >
+            <Settings className="w-5 h-5 md:w-6 md:h-6" />
+          </Link>
+          
           <a
             href="https://instagram.com/Blackbaber"
             target="_blank"
