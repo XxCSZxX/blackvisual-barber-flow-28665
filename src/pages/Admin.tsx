@@ -29,6 +29,7 @@ const Admin = () => {
     price: "",
     image: "",
     slug: "",
+    category: "corte-masculino",
   });
   const [newTimeSlot, setNewTimeSlot] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -152,6 +153,7 @@ const Admin = () => {
       price: parseFloat(newService.price),
       image: imageUrl || "/placeholder.svg",
       slug: newService.slug || newService.title.toLowerCase().replace(/\s+/g, "-"),
+      category: newService.category,
     });
 
     if (error) {
@@ -160,7 +162,7 @@ const Admin = () => {
     }
 
     toast.success("Corte adicionado!");
-    setNewService({ title: "", description: "", price: "", image: "", slug: "" });
+    setNewService({ title: "", description: "", price: "", image: "", slug: "", category: "corte-masculino" });
     setSelectedFile(null);
     loadData();
   };
@@ -353,6 +355,19 @@ const Admin = () => {
                     onChange={(e) => setNewService({ ...newService, description: e.target.value })}
                     placeholder="Descrição do corte"
                   />
+                </div>
+                <div>
+                  <Label>Categoria</Label>
+                  <select
+                    value={newService.category}
+                    onChange={(e) => setNewService({ ...newService, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                  >
+                    <option value="corte-masculino">Corte Masculino</option>
+                    <option value="barba">Barba</option>
+                    <option value="sombrancelha">Sombrancelha</option>
+                    <option value="produtos-consumiveis">Produtos Consumíveis</option>
+                  </select>
                 </div>
                 <div>
                   <Label>Imagem do Corte</Label>
