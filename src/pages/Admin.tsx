@@ -13,6 +13,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Service = Database["public"]["Tables"]["services"]["Row"];
 type TimeSlot = Database["public"]["Tables"]["time_slots"]["Row"];
+type DiscountCoupon = Database["public"]["Tables"]["discount_coupons"]["Row"];
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [coupons, setCoupons] = useState<DiscountCoupon[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [newService, setNewService] = useState({
     title: "",
@@ -31,6 +33,13 @@ const Admin = () => {
   const [newTimeSlot, setNewTimeSlot] = useState("");
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [newCoupon, setNewCoupon] = useState({
+    code: "",
+    discount_type: "percentage",
+    discount_value: "",
+    max_uses: "",
+    expires_at: "",
+  });
 
   useEffect(() => {
     checkAuth();
@@ -62,13 +71,15 @@ const Admin = () => {
   };
 
   const loadData = async () => {
-    const [servicesRes, timeSlotsRes] = await Promise.all([
+    const [servicesRes, timeSlotsRes, couponsRes] = await Promise.all([
       supabase.from("services").select("*").order("created_at"),
       supabase.from("time_slots").select("*").order("display_order"),
+      supabase.from("discount_coupons").select("*").order("created_at", { ascending: false }),
     ]);
 
     if (servicesRes.data) setServices(servicesRes.data);
     if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data);
+    if (couponsRes.data) setCoupons(couponsRes.data);
   };
 
   const handleLogout = async () => {
@@ -228,6 +239,59 @@ const Admin = () => {
     loadData();
   };
 
+  const handleAddCoupon = async () => {
+    if (!newCoupon.code || !newCoupon.discount_value) {
+      toast.error("Preencha código e valor do desconto");
+      return;
+    }
+
+    const { error } = await supabase.from("discount_coupons").insert({
+      code: newCoupon.code.toUpperCase(),
+      discount_type: newCoupon.discount_type,
+      discount_value: parseFloat(newCoupon.discount_value),
+      max_uses: newCoupon.max_uses ? parseInt(newCoupon.max_uses) : null,
+      expires_at: newCoupon.expires_at || null,
+    });
+
+    if (error) {
+      toast.error("Erro ao adicionar cupom");
+      return;
+    }
+
+    toast.success("Cupom criado!");
+    setNewCoupon({ code: "", discount_type: "percentage", discount_value: "", max_uses: "", expires_at: "" });
+    loadData();
+  };
+
+  const handleToggleCoupon = async (id: string, currentActive: boolean) => {
+    const { error } = await supabase
+      .from("discount_coupons")
+      .update({ active: !currentActive })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Erro ao atualizar");
+      return;
+    }
+
+    toast.success(currentActive ? "Cupom desativado" : "Cupom ativado");
+    loadData();
+  };
+
+  const handleDeleteCoupon = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir?")) return;
+
+    const { error } = await supabase.from("discount_coupons").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Erro ao excluir");
+      return;
+    }
+
+    toast.success("Cupom excluído!");
+    loadData();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -250,9 +314,10 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="services">Cortes</TabsTrigger>
             <TabsTrigger value="times">Horários</TabsTrigger>
+            <TabsTrigger value="coupons">Cupons</TabsTrigger>
           </TabsList>
 
           <TabsContent value="services" className="space-y-6">
@@ -454,6 +519,127 @@ const Admin = () => {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="coupons" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Criar Cupom de Desconto</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Código do Cupom</Label>
+                    <Input
+                      value={newCoupon.code}
+                      onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                      placeholder="DESCONTO10"
+                      className="uppercase"
+                    />
+                  </div>
+                  <div>
+                    <Label>Tipo de Desconto</Label>
+                    <select
+                      value={newCoupon.discount_type}
+                      onChange={(e) => setNewCoupon({ ...newCoupon, discount_type: e.target.value })}
+                      className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                    >
+                      <option value="percentage">Porcentagem (%)</option>
+                      <option value="fixed">Valor Fixo (R$)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label>Valor do Desconto</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={newCoupon.discount_value}
+                      onChange={(e) => setNewCoupon({ ...newCoupon, discount_value: e.target.value })}
+                      placeholder={newCoupon.discount_type === "percentage" ? "10" : "15.00"}
+                    />
+                  </div>
+                  <div>
+                    <Label>Usos Máximos (opcional)</Label>
+                    <Input
+                      type="number"
+                      value={newCoupon.max_uses}
+                      onChange={(e) => setNewCoupon({ ...newCoupon, max_uses: e.target.value })}
+                      placeholder="100"
+                    />
+                  </div>
+                  <div>
+                    <Label>Data de Expiração (opcional)</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newCoupon.expires_at}
+                      onChange={(e) => setNewCoupon({ ...newCoupon, expires_at: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <Button onClick={handleAddCoupon} className="w-full btn-3d">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar Cupom
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4">
+              {coupons.map((coupon) => (
+                <Card key={coupon.id} className={!coupon.active ? "opacity-60" : ""}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-bold text-xl">{coupon.code}</h3>
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${coupon.active ? "bg-green-500/20 text-green-500" : "bg-gray-500/20 text-gray-500"}`}>
+                            {coupon.active ? "ATIVO" : "INATIVO"}
+                          </span>
+                        </div>
+                        <p className="text-muted-foreground">
+                          {coupon.discount_type === "percentage" 
+                            ? `${coupon.discount_value}% de desconto`
+                            : `R$ ${Number(coupon.discount_value).toFixed(2)} de desconto`
+                          }
+                        </p>
+                        {coupon.max_uses && (
+                          <p className="text-sm text-muted-foreground">
+                            Usado {coupon.current_uses} de {coupon.max_uses} vezes
+                          </p>
+                        )}
+                        {coupon.expires_at && (
+                          <p className="text-sm text-muted-foreground">
+                            Expira em: {new Date(coupon.expires_at).toLocaleDateString('pt-BR')}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleToggleCoupon(coupon.id, coupon.active)}
+                        >
+                          {coupon.active ? "Desativar" : "Ativar"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteCoupon(coupon.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {coupons.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>Nenhum cupom criado ainda</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>

@@ -1,9 +1,13 @@
-import { X, ShoppingCart } from "lucide-react";
+import { useState } from "react";
+import { X, ShoppingCart, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface CartItem {
   id: string;
@@ -22,7 +26,63 @@ interface CartProps {
 }
 
 const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+
+  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  
+  const discount = appliedCoupon 
+    ? appliedCoupon.discount_type === "percentage"
+      ? subtotal * (appliedCoupon.discount_value / 100)
+      : Number(appliedCoupon.discount_value)
+    : 0;
+
+  const total = Math.max(subtotal - discount, 0);
+
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Digite um código de cupom");
+      return;
+    }
+
+    setValidatingCoupon(true);
+
+    const { data, error } = await supabase
+      .from("discount_coupons")
+      .select("*")
+      .eq("code", couponCode.toUpperCase())
+      .eq("active", true)
+      .maybeSingle();
+
+    setValidatingCoupon(false);
+
+    if (error || !data) {
+      toast.error("Cupom inválido ou expirado");
+      return;
+    }
+
+    // Check if expired
+    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+      toast.error("Este cupom expirou");
+      return;
+    }
+
+    // Check max uses
+    if (data.max_uses && data.current_uses >= data.max_uses) {
+      toast.error("Este cupom atingiu o limite de usos");
+      return;
+    }
+
+    setAppliedCoupon(data);
+    toast.success("Cupom aplicado com sucesso! 🎉");
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode("");
+    toast.success("Cupom removido");
+  };
 
   const formatWhatsAppMessage = () => {
     const itemsText = items
@@ -32,9 +92,19 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
       })
       .join("\n\n");
 
-    return encodeURIComponent(
-      `Olá Blackvisual! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n💵 Total: R$ ${total.toFixed(2)}\n\nAguardo confirmação!`
-    );
+    let message = `Olá Blackvisual! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
+    
+    if (appliedCoupon) {
+      message += `💰 Subtotal: R$ ${subtotal.toFixed(2)}\n`;
+      message += `🎟️ Cupom ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
+      message += `💵 Total: R$ ${total.toFixed(2)}\n\n`;
+    } else {
+      message += `💵 Total: R$ ${total.toFixed(2)}\n\n`;
+    }
+    
+    message += `Aguardo confirmação!`;
+
+    return encodeURIComponent(message);
   };
 
   const handleFinish = () => {
@@ -106,9 +176,67 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
 
         {items.length > 0 && (
           <div className="border-t border-border pt-4 space-y-3 md:space-y-4 mt-4 bg-card">
-            <div className="flex justify-between items-center text-lg md:text-xl font-bold">
-              <span className="text-sm md:text-base">Total:</span>
-              <span className="text-metallic text-xl md:text-2xl">R$ {total.toFixed(2)}</span>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    placeholder="Cupom de desconto"
+                    disabled={!!appliedCoupon || validatingCoupon}
+                    className="pl-10 uppercase"
+                  />
+                </div>
+                {appliedCoupon ? (
+                  <Button onClick={removeCoupon} variant="outline" size="sm">
+                    Remover
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={validateCoupon} 
+                    disabled={validatingCoupon}
+                    size="sm"
+                    className="btn-3d"
+                  >
+                    {validatingCoupon ? "..." : "Aplicar"}
+                  </Button>
+                )}
+              </div>
+
+              {appliedCoupon && (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-sm">
+                  <div className="flex items-center gap-2 text-green-500 font-bold">
+                    <Tag className="h-4 w-4" />
+                    Cupom {appliedCoupon.code} aplicado!
+                  </div>
+                  <p className="text-muted-foreground mt-1">
+                    {appliedCoupon.discount_type === "percentage"
+                      ? `${appliedCoupon.discount_value}% de desconto`
+                      : `R$ ${Number(appliedCoupon.discount_value).toFixed(2)} de desconto`
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              {appliedCoupon && (
+                <>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Subtotal:</span>
+                    <span>R$ {subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-green-500 font-bold">
+                    <span>Desconto:</span>
+                    <span>- R$ {discount.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between items-center text-lg md:text-xl font-bold border-t pt-2">
+                <span className="text-sm md:text-base">Total:</span>
+                <span className="text-metallic text-xl md:text-2xl">R$ {total.toFixed(2)}</span>
+              </div>
             </div>
 
             <Button
