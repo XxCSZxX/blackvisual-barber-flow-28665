@@ -33,8 +33,10 @@ const Header = () => {
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-border">
-      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border shadow-lg shadow-accent/5">
+      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between relative">
+        {/* 3D depth line effect */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
         <div className="flex items-center gap-4 md:gap-8">
           <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-foreground tracking-tighter">
             Blackvisual

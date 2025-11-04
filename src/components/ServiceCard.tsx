@@ -28,7 +28,7 @@ const ServiceCard = ({ title, description, price, image, slug, onSelect }: Servi
         </div>
 
         <div className="flex items-center justify-between pt-1 md:pt-2">
-          <span className="text-metallic text-2xl md:text-3xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
+          <span className="text-foreground text-2xl md:text-3xl font-black drop-shadow-[0_3px_15px_rgba(255,255,255,0.3)]">
             R$ {price.toFixed(2)}
           </span>
           <Button

@@ -170,15 +170,15 @@ const Index = () => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-black text-metallic">5+</div>
+              <div className="text-3xl md:text-4xl font-black text-foreground">5+</div>
               <p className="text-sm md:text-base text-muted-foreground">Anos de experiência</p>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-black text-metallic">1000+</div>
+              <div className="text-3xl md:text-4xl font-black text-foreground">1000+</div>
               <p className="text-sm md:text-base text-muted-foreground">Clientes satisfeitos</p>
             </div>
             <div className="space-y-2">
-              <div className="text-3xl md:text-4xl font-black text-metallic">100%</div>
+              <div className="text-3xl md:text-4xl font-black text-foreground">100%</div>
               <p className="text-sm md:text-base text-muted-foreground">Profissionalismo</p>
             </div>
           </div>
