@@ -23,8 +23,8 @@ const ServiceCard = ({ title, description, price, image, slug, onSelect }: Servi
 
       <div className="p-4 md:p-6 space-y-3 md:space-y-4">
         <div>
-          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1 md:mb-2 group-hover:text-accent transition-colors duration-300">{title}</h3>
-          <p className="text-muted-foreground text-xs md:text-sm">{description}</p>
+          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1 md:mb-2 group-hover:text-accent transition-colors duration-300 break-words">{title}</h3>
+          <p className="text-muted-foreground text-xs md:text-sm line-clamp-2 break-words">{description}</p>
         </div>
 
         <div className="flex items-center justify-between pt-1 md:pt-2">
