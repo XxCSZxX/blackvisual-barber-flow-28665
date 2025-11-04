@@ -29,6 +29,8 @@ const Admin = () => {
     slug: "",
   });
   const [newTimeSlot, setNewTimeSlot] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -74,17 +76,70 @@ const Admin = () => {
     navigate("/");
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast.error("Por favor, selecione uma imagem");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("A imagem deve ter no máximo 5MB");
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('service-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('service-images')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      toast.error("Erro ao fazer upload da imagem");
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleAddService = async () => {
     if (!newService.title || !newService.price) {
       toast.error("Preencha título e preço");
       return;
     }
 
+    let imageUrl = newService.image;
+
+    if (selectedFile) {
+      const uploadedUrl = await uploadImage(selectedFile);
+      if (!uploadedUrl) return;
+      imageUrl = uploadedUrl;
+    }
+
     const { error } = await supabase.from("services").insert({
       title: newService.title,
       description: newService.description,
       price: parseFloat(newService.price),
-      image: newService.image || "/placeholder.svg",
+      image: imageUrl || "/placeholder.svg",
       slug: newService.slug || newService.title.toLowerCase().replace(/\s+/g, "-"),
     });
 
@@ -95,6 +150,7 @@ const Admin = () => {
 
     toast.success("Corte adicionado!");
     setNewService({ title: "", description: "", price: "", image: "", slug: "" });
+    setSelectedFile(null);
     loadData();
   };
 
@@ -233,27 +289,50 @@ const Admin = () => {
                     placeholder="Descrição do corte"
                   />
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>URL da Imagem</Label>
+                <div>
+                  <Label>Imagem do Corte</Label>
+                  <div className="space-y-3">
                     <Input
-                      value={newService.image}
-                      onChange={(e) => setNewService({ ...newService, image: e.target.value })}
-                      placeholder="/src/assets/corte.jpg"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      disabled={uploading}
+                      className="cursor-pointer"
                     />
-                  </div>
-                  <div>
-                    <Label>Slug (URL amigável)</Label>
-                    <Input
-                      value={newService.slug}
-                      onChange={(e) => setNewService({ ...newService, slug: e.target.value })}
-                      placeholder="corte-premium"
-                    />
+                    {selectedFile && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>📷 {selectedFile.name}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <Button onClick={handleAddService} className="w-full btn-3d">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Adicionar Corte
+                <div>
+                  <Label>Slug (URL amigável)</Label>
+                  <Input
+                    value={newService.slug}
+                    onChange={(e) => setNewService({ ...newService, slug: e.target.value })}
+                    placeholder="corte-premium"
+                  />
+                </div>
+                <Button onClick={handleAddService} className="w-full btn-3d" disabled={uploading}>
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Fazendo upload...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Corte
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>

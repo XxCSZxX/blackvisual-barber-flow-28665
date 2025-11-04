@@ -11,13 +11,12 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import SuccessCheck from "@/components/SuccessCheck";
 import Footer from "@/components/Footer";
 
-// Import images
+// Fallback images for legacy services
 import corteModerno from "@/assets/corte-masculino.jpg";
 import degradePerfeito from "@/assets/degrade-perfeito.jpg";
 import barbaVip from "@/assets/barba-vip.jpg";
 
-// Map image slugs to imported images
-const imageMap: Record<string, string> = {
+const fallbackImages: Record<string, string> = {
   "corte-masculino.jpg": corteModerno,
   "degrade-perfeito.jpg": degradePerfeito,
   "barba-vip.jpg": barbaVip,
@@ -66,13 +65,21 @@ const Index = () => {
 
     if (data) {
       setServices(
-        data.map((s) => ({
-          title: s.title,
-          description: s.description,
-          price: Number(s.price),
-          image: imageMap[s.image] || s.image, // Use mapped image or fallback to DB path
-          slug: s.slug,
-        }))
+        data.map((s) => {
+          // If image is from storage (contains supabase URL), use it directly
+          // Otherwise, try fallback images for legacy services
+          const imageUrl = s.image.includes('supabase') 
+            ? s.image 
+            : fallbackImages[s.image] || s.image;
+          
+          return {
+            title: s.title,
+            description: s.description,
+            price: Number(s.price),
+            image: imageUrl,
+            slug: s.slug,
+          };
+        })
       );
     }
   };
