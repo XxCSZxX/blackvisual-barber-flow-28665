@@ -36,7 +36,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
         {service && (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl md:text-3xl font-black">{service.title}</DialogTitle>
+              <DialogTitle className="text-2xl md:text-3xl font-black break-words">{service.title}</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 md:space-y-6">
@@ -49,7 +49,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
               </div>
 
               <div>
-                <p className="text-muted-foreground mb-3 md:mb-4 text-base md:text-lg">{service.description}</p>
+                <p className="text-muted-foreground mb-3 md:mb-4 text-base md:text-lg break-words line-clamp-3">{service.description}</p>
                 <div className="text-metallic text-3xl md:text-4xl font-black drop-shadow-[0_3px_15px_rgba(255,215,0,0.5)]">
                   R$ {service.price.toFixed(2)}
                 </div>
