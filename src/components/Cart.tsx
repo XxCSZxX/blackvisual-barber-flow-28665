@@ -17,6 +17,7 @@ interface CartItem {
   date: Date;
   time: string;
   image: string;
+  paymentMethod: string;
 }
 
 interface CartProps {
@@ -88,7 +89,8 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
     const itemsText = items
       .map((item) => {
         const dateFormatted = format(item.date, "dd/MM/yyyy", { locale: ptBR });
-        return `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}`;
+        const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
+        return `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
       })
       .join("\n\n");
 
@@ -157,6 +159,9 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
                     <p className="text-xs md:text-sm text-muted-foreground truncate">{item.customerName}</p>
                     <p className="text-xs md:text-sm text-muted-foreground">
                       {format(item.date, "dd/MM/yyyy", { locale: ptBR })} às {item.time}
+                    </p>
+                    <p className="text-xs md:text-sm text-muted-foreground">
+                      💳 {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
                     </p>
                     <p className="text-metallic font-bold text-sm md:text-base">R$ {item.price.toFixed(2)}</p>
                   </div>

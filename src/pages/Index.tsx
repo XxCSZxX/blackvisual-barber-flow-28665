@@ -38,6 +38,7 @@ interface CartItem {
   date: Date;
   time: string;
   image: string;
+  paymentMethod: string;
 }
 
 const Index = () => {
@@ -48,6 +49,7 @@ const Index = () => {
   const [currentBooking, setCurrentBooking] = useState<{
     name: string;
     service: Service;
+    paymentMethod: string;
   } | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -92,8 +94,8 @@ const Index = () => {
     }
   };
 
-  const handleProceedToCalendar = (name: string, service: Service) => {
-    setCurrentBooking({ name, service });
+  const handleProceedToCalendar = (name: string, service: Service, paymentMethod: string) => {
+    setCurrentBooking({ name, service, paymentMethod });
     setShowModal(false);
     setShowCalendar(true);
   };
@@ -108,6 +110,7 @@ const Index = () => {
         date,
         time,
         image: currentBooking.service.image,
+        paymentMethod: currentBooking.paymentMethod,
       };
 
       setCartItems([...cartItems, newItem]);

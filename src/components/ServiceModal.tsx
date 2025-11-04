@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ServiceModalProps {
   isOpen: boolean;
@@ -14,16 +15,18 @@ interface ServiceModalProps {
     image: string;
     slug: string;
   } | null;
-  onProceed: (name: string, service: any) => void;
+  onProceed: (name: string, service: any, paymentMethod: string) => void;
 }
 
 const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps) => {
   const [name, setName] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("pix");
 
   const handleProceed = () => {
     if (name.trim() && service) {
-      onProceed(name, service);
+      onProceed(name, service, paymentMethod);
       setName("");
+      setPaymentMethod("pix");
     }
   };
 
@@ -63,6 +66,22 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
                   placeholder="Digite seu nome"
                   className="bg-secondary border-border/50 text-foreground py-5 md:py-6 text-sm md:text-base focus:border-accent transition-colors"
                 />
+              </div>
+
+              <div className="space-y-2 md:space-y-3">
+                <Label className="text-foreground text-sm md:text-base">
+                  Forma de pagamento
+                </Label>
+                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="flex gap-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="pix" id="pix" />
+                    <Label htmlFor="pix" className="cursor-pointer text-sm md:text-base">PIX</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="cartao" id="cartao" />
+                    <Label htmlFor="cartao" className="cursor-pointer text-sm md:text-base">Cartão</Label>
+                  </div>
+                </RadioGroup>
               </div>
 
               <Button
