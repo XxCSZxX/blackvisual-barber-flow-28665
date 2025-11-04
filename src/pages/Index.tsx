@@ -54,6 +54,7 @@ const Index = () => {
   } | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("corte-masculino");
 
   useEffect(() => {
     loadServices();
@@ -151,76 +152,70 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="space-y-16 max-w-7xl mx-auto">
-            {/* Corte Masculino */}
-            {services.filter(s => s.category === 'corte-masculino').length > 0 && (
-              <div>
-                <h3 className="text-2xl md:text-3xl font-black mb-6 text-center">Corte Masculino</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {services.filter(s => s.category === 'corte-masculino').map((service, index) => (
-                    <div
-                      key={service.slug}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <ServiceCard {...service} onSelect={handleSelectService} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Category Tabs */}
+          <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 md:mb-12 max-w-4xl mx-auto">
+            <button
+              onClick={() => setSelectedCategory("corte-masculino")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "corte-masculino"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Corte Masculino
+            </button>
+            <button
+              onClick={() => setSelectedCategory("barba")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "barba"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Barba
+            </button>
+            <button
+              onClick={() => setSelectedCategory("sombrancelha")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "sombrancelha"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Sombrancelha
+            </button>
+            <button
+              onClick={() => setSelectedCategory("produtos-consumiveis")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "produtos-consumiveis"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Produtos Consumíveis
+            </button>
+          </div>
 
-            {/* Barba */}
-            {services.filter(s => s.category === 'barba').length > 0 && (
-              <div>
-                <h3 className="text-2xl md:text-3xl font-black mb-6 text-center">Barba</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {services.filter(s => s.category === 'barba').map((service, index) => (
-                    <div
-                      key={service.slug}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <ServiceCard {...service} onSelect={handleSelectService} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Sombrancelha */}
-            {services.filter(s => s.category === 'sombrancelha').length > 0 && (
-              <div>
-                <h3 className="text-2xl md:text-3xl font-black mb-6 text-center">Sombrancelha</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {services.filter(s => s.category === 'sombrancelha').map((service, index) => (
-                    <div
-                      key={service.slug}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <ServiceCard {...service} onSelect={handleSelectService} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Produtos Consumíveis */}
-            {services.filter(s => s.category === 'produtos-consumiveis').length > 0 && (
-              <div>
-                <h3 className="text-2xl md:text-3xl font-black mb-6 text-center">Produtos Consumíveis</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {services.filter(s => s.category === 'produtos-consumiveis').map((service, index) => (
-                    <div
-                      key={service.slug}
-                      className="animate-fade-in"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <ServiceCard {...service} onSelect={handleSelectService} />
-                    </div>
-                  ))}
-                </div>
+          {/* Services Grid */}
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {services
+                .filter((s) => s.category === selectedCategory)
+                .map((service, index) => (
+                  <div
+                    key={service.slug}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <ServiceCard {...service} onSelect={handleSelectService} />
+                  </div>
+                ))}
+            </div>
+            {services.filter((s) => s.category === selectedCategory).length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">
+                  Nenhum serviço disponível nesta categoria ainda.
+                </p>
               </div>
             )}
           </div>
