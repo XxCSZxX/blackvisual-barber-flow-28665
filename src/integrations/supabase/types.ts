@@ -14,174 +14,16 @@ export type Database = {
   }
   public: {
     Tables: {
-      barbers: {
-        Row: {
-          active: boolean | null
-          created_at: string | null
-          id: string
-          name: string
-          photo: string
-          updated_at: string | null
-          whatsapp: string
-        }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          id?: string
-          name: string
-          photo: string
-          updated_at?: string | null
-          whatsapp: string
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          id?: string
-          name?: string
-          photo?: string
-          updated_at?: string | null
-          whatsapp?: string
-        }
-        Relationships: []
-      }
-      discount_coupons: {
-        Row: {
-          active: boolean | null
-          code: string
-          created_at: string | null
-          current_uses: number | null
-          discount_type: string
-          discount_value: number
-          expires_at: string | null
-          id: string
-          max_uses: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          code: string
-          created_at?: string | null
-          current_uses?: number | null
-          discount_type: string
-          discount_value: number
-          expires_at?: string | null
-          id?: string
-          max_uses?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          code?: string
-          created_at?: string | null
-          current_uses?: number | null
-          discount_type?: string
-          discount_value?: number
-          expires_at?: string | null
-          id?: string
-          max_uses?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      services: {
-        Row: {
-          active: boolean | null
-          category: string
-          created_at: string | null
-          description: string
-          id: string
-          image: string
-          price: number
-          slug: string
-          title: string
-          updated_at: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          category?: string
-          created_at?: string | null
-          description: string
-          id?: string
-          image: string
-          price: number
-          slug: string
-          title: string
-          updated_at?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          category?: string
-          created_at?: string | null
-          description?: string
-          id?: string
-          image?: string
-          price?: number
-          slug?: string
-          title?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      time_slots: {
-        Row: {
-          active: boolean | null
-          created_at: string | null
-          display_order: number
-          id: string
-          time: string
-        }
-        Insert: {
-          active?: boolean | null
-          created_at?: string | null
-          display_order: number
-          id?: string
-          time: string
-        }
-        Update: {
-          active?: boolean | null
-          created_at?: string | null
-          display_order?: number
-          id?: string
-          time?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
-      app_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -308,8 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-    },
+    Enums: {},
   },
 } as const

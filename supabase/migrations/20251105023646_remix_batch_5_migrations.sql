@@ -1,4 +1,6 @@
 
+-- Migration: 20251104182458
+
 -- Migration: 20251104151821
 
 -- Migration: 20251104005050
@@ -324,3 +326,147 @@ WITH CHECK (
 );
 
 -- Ensure update/delete policies remain constrained to the bucket and admin role (idempotent redefinitions are not supported with ALTER for USING in Postgres 14 for storage schema specifics, but they are already correct).;
+
+
+-- Migration: 20251104182857
+-- Add category column to services table
+ALTER TABLE public.services 
+ADD COLUMN category text NOT NULL DEFAULT 'corte-masculino';
+
+-- Add check constraint for valid categories
+ALTER TABLE public.services
+ADD CONSTRAINT services_category_check 
+CHECK (category IN ('corte-masculino', 'barba', 'sombrancelha', 'produtos-consumiveis'));
+
+-- Migration: 20251105021018
+-- Create barbers table
+CREATE TABLE public.barbers (
+  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  whatsapp TEXT NOT NULL,
+  photo TEXT NOT NULL,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.barbers ENABLE ROW LEVEL SECURITY;
+
+-- Anyone can view active barbers
+CREATE POLICY "Anyone can view active barbers"
+ON public.barbers
+FOR SELECT
+USING (active = true);
+
+-- Admins can manage barbers
+CREATE POLICY "Admins can insert barbers"
+ON public.barbers
+FOR INSERT
+WITH CHECK (has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can update barbers"
+ON public.barbers
+FOR UPDATE
+USING (has_role(auth.uid(), 'admin'));
+
+CREATE POLICY "Admins can delete barbers"
+ON public.barbers
+FOR DELETE
+USING (has_role(auth.uid(), 'admin'));
+
+-- Add trigger for updated_at
+CREATE TRIGGER update_barbers_updated_at
+  BEFORE UPDATE ON public.barbers
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_updated_at();
+
+-- Insert Lucas as the first barber
+INSERT INTO public.barbers (name, whatsapp, photo, active)
+VALUES ('Lucas', '+5562991492590', 'lucas-barber.jpg', true);
+
+-- Migration: 20251105022130
+-- Function to automatically assign admin role to the first user
+CREATE OR REPLACE FUNCTION public.handle_new_user_role()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  user_count INTEGER;
+BEGIN
+  -- Count existing users (excluding the one being created)
+  SELECT COUNT(*) INTO user_count FROM auth.users WHERE id != NEW.id;
+  
+  -- If this is the first user, make them an admin
+  IF user_count = 0 THEN
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'admin'::app_role);
+  ELSE
+    -- Otherwise, give them the user role
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'user'::app_role);
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Create trigger to automatically assign roles when a user signs up
+DROP TRIGGER IF EXISTS on_auth_user_created_role ON auth.users;
+CREATE TRIGGER on_auth_user_created_role
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user_role();
+
+-- Assign admin role to the first existing user (the one you just created)
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin'::app_role
+FROM auth.users
+ORDER BY created_at ASC
+LIMIT 1
+ON CONFLICT (user_id, role) DO NOTHING;
+
+-- Migration: 20251105022157
+-- Function to automatically assign admin role to the first user
+CREATE OR REPLACE FUNCTION public.handle_new_user_role()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  user_count INTEGER;
+BEGIN
+  -- Count existing users (excluding the one being created)
+  SELECT COUNT(*) INTO user_count FROM auth.users WHERE id != NEW.id;
+  
+  -- If this is the first user, make them an admin
+  IF user_count = 0 THEN
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'admin'::app_role);
+  ELSE
+    -- Otherwise, give them the user role
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'user'::app_role);
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Create trigger to automatically assign roles when a user signs up
+DROP TRIGGER IF EXISTS on_auth_user_created_role ON auth.users;
+CREATE TRIGGER on_auth_user_created_role
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user_role();
+
+-- Assign admin role to the first existing user (the one you just created)
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin'::app_role
+FROM auth.users
+ORDER BY created_at ASC
+LIMIT 1
+ON CONFLICT (user_id, role) DO NOTHING;
