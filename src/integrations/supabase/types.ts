@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      barbers: {
+        Row: {
+          active: boolean | null
+          created_at: string | null
+          id: string
+          name: string
+          photo: string
+          updated_at: string | null
+          whatsapp: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name: string
+          photo: string
+          updated_at?: string | null
+          whatsapp: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string | null
+          id?: string
+          name?: string
+          photo?: string
+          updated_at?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       discount_coupons: {
         Row: {
           active: boolean | null

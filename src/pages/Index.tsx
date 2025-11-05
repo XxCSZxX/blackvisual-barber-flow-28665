@@ -31,6 +31,13 @@ interface Service {
   category?: string;
 }
 
+interface Barber {
+  id: string;
+  name: string;
+  whatsapp: string;
+  photo: string;
+}
+
 interface CartItem {
   id: string;
   name: string;
@@ -40,6 +47,7 @@ interface CartItem {
   time: string;
   image: string;
   paymentMethod: string;
+  barber: Barber;
 }
 
 const Index = () => {
@@ -51,6 +59,7 @@ const Index = () => {
     name: string;
     service: Service;
     paymentMethod: string;
+    barber: Barber;
   } | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -98,8 +107,8 @@ const Index = () => {
     }
   };
 
-  const handleProceedToCalendar = (name: string, service: Service, paymentMethod: string) => {
-    setCurrentBooking({ name, service, paymentMethod });
+  const handleProceedToCalendar = (name: string, service: Service, paymentMethod: string, barber: Barber) => {
+    setCurrentBooking({ name, service, paymentMethod, barber });
     setShowModal(false);
     setShowCalendar(true);
   };
@@ -115,6 +124,7 @@ const Index = () => {
         time,
         image: currentBooking.service.image,
         paymentMethod: currentBooking.paymentMethod,
+        barber: currentBooking.barber,
       };
 
       setCartItems([...cartItems, newItem]);

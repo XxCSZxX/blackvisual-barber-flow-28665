@@ -9,6 +9,13 @@ import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface Barber {
+  id: string;
+  name: string;
+  whatsapp: string;
+  photo: string;
+}
+
 interface CartItem {
   id: string;
   name: string;
@@ -18,6 +25,7 @@ interface CartItem {
   time: string;
   image: string;
   paymentMethod: string;
+  barber: Barber;
 }
 
 interface CartProps {
@@ -110,8 +118,42 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
   };
 
   const handleFinish = () => {
-    const message = formatWhatsAppMessage();
-    window.open(`https://wa.me/5562998325960?text=${message}`, "_blank");
+    if (items.length === 0) return;
+    
+    // Group items by barber
+    const itemsByBarber = items.reduce((acc, item) => {
+      const barberId = item.barber.id;
+      if (!acc[barberId]) {
+        acc[barberId] = {
+          barber: item.barber,
+          items: []
+        };
+      }
+      acc[barberId].items.push(item);
+      return acc;
+    }, {} as Record<string, { barber: Barber; items: CartItem[] }>);
+
+    // Send to each barber's WhatsApp
+    Object.values(itemsByBarber).forEach(({ barber, items: barberItems }) => {
+      const itemsText = barberItems
+        .map((item) => {
+          const dateFormatted = format(item.date, "dd/MM/yyyy", { locale: ptBR });
+          const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
+          return `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
+        })
+        .join("\n\n");
+
+      const barberTotal = barberItems.reduce((sum, item) => sum + item.price, 0);
+      
+      let message = `Olá ${barber.name}! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
+      message += `💵 Total: R$ ${barberTotal.toFixed(2)}\n\n`;
+      message += `Aguardo confirmação!`;
+
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappNumber = barber.whatsapp.replace(/\D/g, '');
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
+    });
+    
     onFinish();
   };
 
