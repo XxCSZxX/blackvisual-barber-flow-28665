@@ -15,20 +15,34 @@ const Auth = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
-    // Check if user is already logged in
+    let mounted = true;
+
+    const redirectByRole = async (userId: string) => {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin");
+      const isAdmin = !!roles && roles.length > 0;
+      navigate(isAdmin ? "/admin" : "/");
+    };
+
+    // Check if user is already logged in and redirect accordingly
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/admin");
-      }
+      if (!mounted || !session) return;
+      redirectByRole(session.user.id);
     });
 
+    // Listen to auth state changes and redirect accordingly
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        navigate("/admin");
-      }
+      if (!session) return;
+      redirectByRole(session.user.id);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -43,12 +57,23 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Login realizado com sucesso!");
+        // Redireciona conforme a role do usuário
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data: roles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .eq("role", "admin");
+          const isAdmin = !!roles && roles.length > 0;
+          navigate(isAdmin ? "/admin" : "/");
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
+            emailRedirectTo: `${window.location.origin}/`,
           },
         });
         if (error) throw error;
