@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import Loader3D from "@/components/Loader3D";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -10,6 +9,7 @@ import Cart from "@/components/Cart";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SuccessCheck from "@/components/SuccessCheck";
 import Footer from "@/components/Footer";
+import { getServices } from "@/lib/supabase-helpers";
 
 // Fallback images for legacy services
 import corteModerno from "@/assets/corte-masculino.jpg";
@@ -78,12 +78,7 @@ const Index = () => {
   }, []);
 
   const loadServices = async () => {
-    const { data } = await supabase
-      .from("services")
-      .select("*")
-      .eq("active", true)
-      .order("category")
-      .order("created_at");
+    const { data } = await getServices({ active: true });
 
     if (data) {
       setServices(

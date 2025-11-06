@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { supabase } from "@/integrations/supabase/client";
+import { getBarbers } from "@/lib/supabase-helpers";
 
 interface Barber {
   id: string;
@@ -37,11 +37,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
   }, []);
 
   const loadBarbers = async () => {
-    const { data } = await supabase
-      .from("barbers")
-      .select("*")
-      .eq("active", true)
-      .order("name");
+    const { data } = await getBarbers({ active: true });
     
     if (data && data.length > 0) {
       setBarbers(data);

@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus, ShoppingBag } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  image: string | null;
-}
+import { getProducts } from "@/lib/supabase-helpers";
+import type { Product } from "@/types/database";
 
 interface ProductSuggestionsProps {
   open: boolean;
@@ -31,11 +24,7 @@ const ProductSuggestions = ({ open, onClose, onAddProducts }: ProductSuggestions
 
   const loadProducts = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("active", true)
-      .eq("category", "consumivel");
+    const { data, error } = await getProducts({ active: true, category: "consumivel" });
 
     if (error) {
       toast.error("Erro ao carregar produtos");

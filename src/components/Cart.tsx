@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ProductSuggestions from "./ProductSuggestions";
+import { getDiscountCoupon } from "@/lib/supabase-helpers";
+import type { DiscountCoupon } from "@/types/database";
 
 interface Barber {
   id: string;
@@ -48,7 +49,7 @@ interface CartProps {
 
 const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
   const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<DiscountCoupon | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
 
@@ -74,12 +75,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
 
     setValidatingCoupon(true);
 
-    const { data, error } = await supabase
-      .from("discount_coupons")
-      .select("*")
-      .eq("code", couponCode.toUpperCase())
-      .eq("active", true)
-      .maybeSingle();
+    const { data, error } = await getDiscountCoupon(couponCode);
 
     setValidatingCoupon(false);
 
@@ -88,19 +84,21 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       return;
     }
 
+    const coupon = data;
+
     // Check if expired
-    if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
       toast.error("Este cupom expirou");
       return;
     }
 
     // Check max uses
-    if (data.max_uses && data.current_uses >= data.max_uses) {
+    if (coupon.max_uses && coupon.current_uses >= coupon.max_uses) {
       toast.error("Este cupom atingiu o limite de usos");
       return;
     }
 
-    setAppliedCoupon(data);
+    setAppliedCoupon(coupon);
     toast.success("Cupom aplicado com sucesso! 🎉");
   };
 

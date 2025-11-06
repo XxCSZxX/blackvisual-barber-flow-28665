@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { getTimeSlots } from "@/lib/supabase-helpers";
 
 interface CalendarBookingProps {
   onBookingComplete: (date: Date, time: string) => void;
@@ -24,11 +24,7 @@ const CalendarBooking = ({ onBookingComplete, onCancel }: CalendarBookingProps) 
   }, []);
 
   const loadTimeSlots = async () => {
-    const { data } = await supabase
-      .from("time_slots")
-      .select("time")
-      .eq("active", true)
-      .order("display_order");
+    const { data } = await getTimeSlots({ active: true });
 
     if (data) {
       setTimeSlots(data.map((slot) => slot.time));

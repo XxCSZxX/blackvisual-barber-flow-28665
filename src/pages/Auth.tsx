@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { getUserRoles } from "@/lib/supabase-helpers";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -18,12 +19,8 @@ const Auth = () => {
     let mounted = true;
 
     const redirectByRole = async (userId: string) => {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin");
-      const isAdmin = !!roles && roles.length > 0;
+      const { data: roles } = await getUserRoles(userId);
+      const isAdmin = roles?.some(r => r.role === "admin") ?? false;
       navigate(isAdmin ? "/admin" : "/");
     };
 
@@ -60,12 +57,8 @@ const Auth = () => {
         // Redireciona conforme a role do usuário
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          const { data: roles } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", session.user.id)
-            .eq("role", "admin");
-          const isAdmin = !!roles && roles.length > 0;
+          const { data: roles } = await getUserRoles(session.user.id);
+          const isAdmin = roles?.some(r => r.role === "admin") ?? false;
           navigate(isAdmin ? "/admin" : "/");
         }
       } else {
