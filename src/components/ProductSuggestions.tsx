@@ -23,13 +23,15 @@ const ProductSuggestions = ({ open, onClose, onAddProducts }: ProductSuggestions
   }, [open]);
 
   const loadProducts = async () => {
+    console.log("🔍 Carregando produtos consumíveis...");
     setLoading(true);
     const { data, error } = await getProducts({ active: true, category: "consumivel" });
 
     if (error) {
+      console.error("❌ Erro ao carregar produtos:", error);
       toast.error("Erro ao carregar produtos");
-      console.error(error);
     } else {
+      console.log("✅ Produtos carregados:", data);
       setProducts(data || []);
     }
     setLoading(false);
