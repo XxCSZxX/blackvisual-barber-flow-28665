@@ -48,6 +48,14 @@ interface CartItem {
   image: string;
   paymentMethod: string;
   barber: Barber;
+  products?: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    image: string | null;
+    quantity?: number;
+  }>;
 }
 
 const Index = () => {
@@ -135,6 +143,18 @@ const Index = () => {
 
   const handleRemoveItem = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
+  };
+
+  const handleAddProducts = (itemId: string, products: any[]) => {
+    setCartItems(cartItems.map(item => {
+      if (item.id === itemId) {
+        return {
+          ...item,
+          products: [...(item.products || []), ...products]
+        };
+      }
+      return item;
+    }));
   };
 
   const handleFinishBooking = () => {
@@ -282,7 +302,7 @@ const Index = () => {
         </div>
       )}
 
-      <Cart items={cartItems} onRemoveItem={handleRemoveItem} onFinish={handleFinishBooking} />
+      <Cart items={cartItems} onRemoveItem={handleRemoveItem} onFinish={handleFinishBooking} onAddProducts={handleAddProducts} />
       <WhatsAppButton />
       <SuccessCheck isVisible={showSuccess} onComplete={handleSuccessComplete} />
     </div>

@@ -43,16 +43,16 @@ interface CartProps {
   items: CartItem[];
   onRemoveItem: (id: string) => void;
   onFinish: () => void;
+  onAddProducts: (itemId: string, products: Product[]) => void;
 }
 
-const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
+const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>(items);
 
-  const subtotal = cartItems.reduce((sum, item) => {
+  const subtotal = items.reduce((sum, item) => {
     const itemTotal = item.price;
     const productsTotal = item.products?.reduce((pSum, p) => pSum + (p.price * (p.quantity || 1)), 0) || 0;
     return sum + itemTotal + productsTotal;
@@ -134,32 +134,11 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
     return encodeURIComponent(message);
   };
 
-  const handleAddProducts = (products: Product[], quantities: Record<string, number>) => {
-    const productsWithQuantity = products.map(p => ({
-      ...p,
-      quantity: quantities[p.id]
-    }));
-    
-    const updatedItems = cartItems.map((item, index) => {
-      if (index === 0) {
-        return {
-          ...item,
-          products: [...(item.products || []), ...productsWithQuantity]
-        };
-      }
-      return item;
-    });
-    
-    setCartItems(updatedItems);
-    toast.success("Produtos adicionados ao carrinho!");
-    handleFinishWithProducts();
-  };
-
-  const handleFinishWithProducts = () => {
-    if (cartItems.length === 0) return;
+  const handleFinish = () => {
+    if (items.length === 0) return;
     
     // Group items by barber
-    const itemsByBarber = cartItems.reduce((acc, item) => {
+    const itemsByBarber = items.reduce((acc, item) => {
       const barberId = item.barber.id;
       if (!acc[barberId]) {
         acc[barberId] = {
@@ -205,12 +184,7 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
       window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
     });
     
-    setCartItems(items);
     onFinish();
-  };
-
-  const handleFinishClick = () => {
-    setShowProductSuggestions(true);
   };
 
   return (
@@ -235,14 +209,14 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
         </SheetHeader>
 
         <div className="mt-6 md:mt-8 space-y-3 md:space-y-4 flex-1 overflow-y-auto">
-          {cartItems.length === 0 ? (
+          {items.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <ShoppingCart className="w-12 md:w-16 h-12 md:h-16 mx-auto mb-4 opacity-50" />
               <p className="text-sm md:text-base">Seu carrinho está vazio</p>
             </div>
           ) : (
             <>
-              {cartItems.map((item) => (
+              {items.map((item) => (
                 <div
                   key={item.id}
                   className="flex gap-3 md:gap-4 p-3 md:p-4 bg-secondary rounded-2xl border border-border animate-scale-in"
@@ -287,7 +261,7 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
           )}
         </div>
 
-        {cartItems.length > 0 && (
+        {items.length > 0 && (
           <div className="border-t border-border pt-4 space-y-3 md:space-y-4 mt-4 bg-card">
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -352,18 +326,42 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
               </div>
             </div>
 
+            {/* Product Suggestions */}
+            <div className="border-t pt-4 mb-3">
+              <Button
+                onClick={() => setShowProductSuggestions(!showProductSuggestions)}
+                variant="outline"
+                className="w-full mb-3"
+              >
+                {showProductSuggestions ? "Ocultar produtos" : "➕ Adicionar produtos consumíveis"}
+              </Button>
+              
+              {showProductSuggestions && (
+                <ProductSuggestions
+                  open={showProductSuggestions}
+                  onClose={() => setShowProductSuggestions(false)}
+                  onAddProducts={(products, quantities) => {
+                    const productsWithQuantity = products.map(p => ({
+                      ...p,
+                      quantity: quantities[p.id]
+                    }));
+                    
+                    if (items.length > 0) {
+                      onAddProducts(items[0].id, productsWithQuantity);
+                      toast.success("Produtos adicionados ao carrinho!");
+                      setShowProductSuggestions(false);
+                    }
+                  }}
+                />
+              )}
+            </div>
+
             <Button
-              onClick={handleFinishClick}
+              onClick={handleFinish}
               className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-base md:text-lg py-6 md:py-7 rounded-xl btn-3d"
             >
               Finalizar no WhatsApp
             </Button>
-
-            <ProductSuggestions
-              open={showProductSuggestions}
-              onClose={() => setShowProductSuggestions(false)}
-              onAddProducts={handleAddProducts}
-            />
 
             <p className="text-xs text-center text-muted-foreground px-2">
               Você será redirecionado para o WhatsApp para confirmar seu agendamento

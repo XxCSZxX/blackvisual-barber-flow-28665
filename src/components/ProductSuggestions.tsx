@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Plus, ShoppingBag } from "lucide-react";
+import { Plus, Minus, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -72,16 +71,12 @@ const ProductSuggestions = ({ open, onClose, onAddProducts }: ProductSuggestions
     });
   };
 
-  const handleContinue = () => {
+  const handleAddToCart = () => {
     const selectedProductsList = products.filter(p => selectedProducts[p.id]);
-    onAddProducts(selectedProductsList, selectedProducts);
-    setSelectedProducts({});
-    onClose();
-  };
-
-  const handleSkip = () => {
-    setSelectedProducts({});
-    onClose();
+    if (selectedProductsList.length > 0) {
+      onAddProducts(selectedProductsList, selectedProducts);
+      setSelectedProducts({});
+    }
   };
 
   const total = products.reduce((sum, product) => {
@@ -89,115 +84,98 @@ const ProductSuggestions = ({ open, onClose, onAddProducts }: ProductSuggestions
     return sum + (product.price * quantity);
   }, 0);
 
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <ShoppingBag className="w-6 h-6" />
-            Produtos Recomendados
-          </DialogTitle>
-          <DialogDescription>
-            Aproveite e adicione produtos consumíveis ao seu agendamento
-          </DialogDescription>
-        </DialogHeader>
+    <div className="space-y-3 animate-fade-in">
+      <div className="flex items-center gap-2 text-foreground mb-3">
+        <ShoppingBag className="w-5 h-5" />
+        <h3 className="font-bold text-lg">Produtos Recomendados</h3>
+      </div>
 
-        {loading ? (
-          <div className="py-8 text-center text-muted-foreground">Carregando produtos...</div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
-              {products.map((product) => {
-                const quantity = selectedProducts[product.id] || 0;
-                const isSelected = quantity > 0;
+      {loading ? (
+        <div className="py-4 text-center text-muted-foreground text-sm">Carregando produtos...</div>
+      ) : products.length === 0 ? (
+        <div className="py-4 text-center text-muted-foreground text-sm">Nenhum produto disponível no momento</div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+            {products.map((product) => {
+              const quantity = selectedProducts[product.id] || 0;
+              const isSelected = quantity > 0;
 
-                return (
-                  <div
-                    key={product.id}
-                    className={`border rounded-xl p-4 transition-all cursor-pointer ${
-                      isSelected
-                        ? "border-accent bg-accent/5 ring-2 ring-accent"
-                        : "border-border hover:border-accent/50"
-                    }`}
-                    onClick={() => !isSelected && toggleProduct(product.id)}
-                  >
-                    {product.image && (
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-32 object-cover rounded-lg mb-3"
-                      />
-                    )}
-                    <h4 className="font-bold text-foreground mb-1">{product.name}</h4>
-                    {product.description && (
-                      <p className="text-xs text-muted-foreground mb-2">{product.description}</p>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <p className="text-metallic font-bold">R$ {product.price.toFixed(2)}</p>
-                      
-                      {isSelected ? (
-                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                            onClick={() => updateQuantity(product.id, -1)}
-                          >
-                            -
-                          </Button>
-                          <span className="font-bold w-6 text-center">{quantity}</span>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                            onClick={() => updateQuantity(product.id, 1)}
-                          >
-                            +
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="outline" className="gap-1">
-                          <Plus className="w-4 h-4" />
-                          Adicionar
-                        </Button>
-                      )}
+              return (
+                <div
+                  key={product.id}
+                  className={`border rounded-lg p-2 transition-all ${
+                    isSelected
+                      ? "border-accent bg-accent/10"
+                      : "border-border hover:border-accent/50"
+                  }`}
+                >
+                  {product.image && (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-16 object-cover rounded mb-2"
+                    />
+                  )}
+                  <h4 className="font-bold text-sm text-foreground mb-1 truncate">{product.name}</h4>
+                  <p className="text-metallic font-bold text-sm mb-2">R$ {product.price.toFixed(2)}</p>
+                  
+                  {isSelected ? (
+                    <div className="flex items-center gap-1 justify-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 w-6 p-0"
+                        onClick={() => updateQuantity(product.id, -1)}
+                      >
+                        <Minus className="w-3 h-3" />
+                      </Button>
+                      <span className="font-bold w-6 text-center text-sm">{quantity}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 w-6 p-0"
+                        onClick={() => updateQuantity(product.id, 1)}
+                      >
+                        <Plus className="w-3 h-3" />
+                      </Button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {Object.keys(selectedProducts).length > 0 && (
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-medium">Total em produtos:</span>
-                  <span className="text-xl font-bold text-metallic">R$ {total.toFixed(2)}</span>
+                  ) : (
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="w-full text-xs"
+                      onClick={() => toggleProduct(product.id)}
+                    >
+                      Adicionar
+                    </Button>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })}
+          </div>
 
-            <div className="flex gap-2 pt-4">
+          {Object.keys(selectedProducts).length > 0 && (
+            <>
+              <div className="flex justify-between items-center py-2 border-t">
+                <span className="text-sm font-medium">Total em produtos:</span>
+                <span className="text-lg font-bold text-metallic">R$ {total.toFixed(2)}</span>
+              </div>
               <Button
-                variant="outline"
-                onClick={handleSkip}
-                className="flex-1"
+                onClick={handleAddToCart}
+                className="w-full bg-accent/80 text-accent-foreground hover:bg-accent text-sm"
+                size="sm"
               >
-                Pular
+                Adicionar ao carrinho
               </Button>
-              <Button
-                onClick={handleContinue}
-                className="flex-1 bg-accent text-accent-foreground hover:bg-accent/95"
-                disabled={Object.keys(selectedProducts).length === 0}
-              >
-                {Object.keys(selectedProducts).length > 0
-                  ? `Adicionar (R$ ${total.toFixed(2)})`
-                  : "Continuar"}
-              </Button>
-            </div>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+            </>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 
