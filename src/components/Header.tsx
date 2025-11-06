@@ -50,7 +50,7 @@ const Header = () => {
 
         <div className="flex items-center gap-3 md:gap-4">
           <Link
-            to="/auth"
+            to="/admin"
             className="text-muted-foreground hover:text-accent transition-colors"
             aria-label="Admin"
           >

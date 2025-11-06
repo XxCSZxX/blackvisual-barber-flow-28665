@@ -19,6 +19,7 @@ const Admin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canClaimAdmin, setCanClaimAdmin] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [coupons, setCoupons] = useState<DiscountCoupon[]>([]);
@@ -54,21 +55,33 @@ const Admin = () => {
       return;
     }
 
-    const { data: roles } = await supabase
+    const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", session.user.id)
       .eq("role", "admin")
-      .single();
+      .maybeSingle();
 
-    if (!roles) {
-      toast.error("Você não tem permissão de administrador");
-      navigate("/");
+    if (roleRow) {
+      setIsAdmin(true);
+      setLoading(false);
       return;
     }
 
-    setIsAdmin(true);
-    setLoading(false);
+    // Check if there is no admin at all to allow bootstrap
+    const { data: hasAdmin, error: adminCheckError } = await supabase.rpc('any_admin_exists');
+    if (adminCheckError) {
+      console.error('Erro ao verificar admins:', adminCheckError);
+    }
+
+    if (!hasAdmin) {
+      setCanClaimAdmin(true);
+      setLoading(false);
+      return;
+    }
+
+    toast.error("Você não tem permissão de administrador");
+    navigate("/");
   };
 
   const loadData = async () => {
@@ -302,7 +315,42 @@ const Admin = () => {
     );
   }
 
-  if (!isAdmin) return null;
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 text-center space-y-4">
+          {canClaimAdmin ? (
+            <>
+              <h1 className="text-2xl font-black">Configurar administrador</h1>
+              <p className="text-muted-foreground">Nenhum administrador encontrado. Torne-se o primeiro admin desta barbearia.</p>
+              <Button
+                className="w-full btn-3d"
+                onClick={async () => {
+                  const { error } = await supabase.rpc('claim_admin');
+                  if (error) {
+                    toast.error(error.message || 'Não foi possível tornar-se admin');
+                    return;
+                  }
+                  toast.success('Você agora é administrador!');
+                  setIsAdmin(true);
+                  setCanClaimAdmin(false);
+                }}
+              >
+                Tornar-me Admin
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Voltar</Button>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-black">Acesso negado</h1>
+              <p className="text-muted-foreground">Você não tem permissão de administrador.</p>
+              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Voltar</Button>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
