@@ -8,12 +8,22 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ProductSuggestions from "./ProductSuggestions";
 
 interface Barber {
   id: string;
   name: string;
   whatsapp: string;
   photo: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image: string | null;
+  quantity?: number;
 }
 
 interface CartItem {
@@ -26,6 +36,7 @@ interface CartItem {
   image: string;
   paymentMethod: string;
   barber: Barber;
+  products?: Product[];
 }
 
 interface CartProps {
@@ -38,8 +49,14 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [showProductSuggestions, setShowProductSuggestions] = useState(false);
+  const [cartItems, setCartItems] = useState<CartItem[]>(items);
 
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = cartItems.reduce((sum, item) => {
+    const itemTotal = item.price;
+    const productsTotal = item.products?.reduce((pSum, p) => pSum + (p.price * (p.quantity || 1)), 0) || 0;
+    return sum + itemTotal + productsTotal;
+  }, 0);
   
   const discount = appliedCoupon 
     ? appliedCoupon.discount_type === "percentage"
@@ -117,11 +134,32 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
     return encodeURIComponent(message);
   };
 
-  const handleFinish = () => {
-    if (items.length === 0) return;
+  const handleAddProducts = (products: Product[], quantities: Record<string, number>) => {
+    const productsWithQuantity = products.map(p => ({
+      ...p,
+      quantity: quantities[p.id]
+    }));
+    
+    const updatedItems = cartItems.map((item, index) => {
+      if (index === 0) {
+        return {
+          ...item,
+          products: [...(item.products || []), ...productsWithQuantity]
+        };
+      }
+      return item;
+    });
+    
+    setCartItems(updatedItems);
+    toast.success("Produtos adicionados ao carrinho!");
+    handleFinishWithProducts();
+  };
+
+  const handleFinishWithProducts = () => {
+    if (cartItems.length === 0) return;
     
     // Group items by barber
-    const itemsByBarber = items.reduce((acc, item) => {
+    const itemsByBarber = cartItems.reduce((acc, item) => {
       const barberId = item.barber.id;
       if (!acc[barberId]) {
         acc[barberId] = {
@@ -139,11 +177,24 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
         .map((item) => {
           const dateFormatted = format(item.date, "dd/MM/yyyy", { locale: ptBR });
           const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
-          return `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
+          let itemText = `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
+          
+          if (item.products && item.products.length > 0) {
+            itemText += "\n\n🛍️ Produtos adicionais:";
+            item.products.forEach(p => {
+              itemText += `\n  • ${p.name} (${p.quantity}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`;
+            });
+          }
+          
+          return itemText;
         })
         .join("\n\n");
 
-      const barberTotal = barberItems.reduce((sum, item) => sum + item.price, 0);
+      const barberTotal = barberItems.reduce((sum, item) => {
+        const itemTotal = item.price;
+        const productsTotal = item.products?.reduce((pSum, p) => pSum + (p.price * (p.quantity || 1)), 0) || 0;
+        return sum + itemTotal + productsTotal;
+      }, 0);
       
       let message = `Olá ${barber.name}! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
       message += `💵 Total: R$ ${barberTotal.toFixed(2)}\n\n`;
@@ -154,7 +205,12 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
       window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
     });
     
+    setCartItems(items);
     onFinish();
+  };
+
+  const handleFinishClick = () => {
+    setShowProductSuggestions(true);
   };
 
   return (
@@ -179,14 +235,14 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
         </SheetHeader>
 
         <div className="mt-6 md:mt-8 space-y-3 md:space-y-4 flex-1 overflow-y-auto">
-          {items.length === 0 ? (
+          {cartItems.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <ShoppingCart className="w-12 md:w-16 h-12 md:h-16 mx-auto mb-4 opacity-50" />
               <p className="text-sm md:text-base">Seu carrinho está vazio</p>
             </div>
           ) : (
             <>
-              {items.map((item) => (
+              {cartItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex gap-3 md:gap-4 p-3 md:p-4 bg-secondary rounded-2xl border border-border animate-scale-in"
@@ -206,6 +262,16 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
                       💳 {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
                     </p>
                     <p className="text-metallic font-bold text-sm md:text-base">R$ {item.price.toFixed(2)}</p>
+                    {item.products && item.products.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-border">
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Produtos:</p>
+                        {item.products.map((product, idx) => (
+                          <p key={idx} className="text-xs text-muted-foreground">
+                            • {product.name} ({product.quantity}x) - R$ {(product.price * (product.quantity || 1)).toFixed(2)}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <Button
                     size="icon"
@@ -221,7 +287,7 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
           )}
         </div>
 
-        {items.length > 0 && (
+        {cartItems.length > 0 && (
           <div className="border-t border-border pt-4 space-y-3 md:space-y-4 mt-4 bg-card">
             <div className="space-y-3">
               <div className="flex gap-2">
@@ -287,11 +353,17 @@ const Cart = ({ items, onRemoveItem, onFinish }: CartProps) => {
             </div>
 
             <Button
-              onClick={handleFinish}
+              onClick={handleFinishClick}
               className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-base md:text-lg py-6 md:py-7 rounded-xl btn-3d"
             >
               Finalizar no WhatsApp
             </Button>
+
+            <ProductSuggestions
+              open={showProductSuggestions}
+              onClose={() => setShowProductSuggestions(false)}
+              onAddProducts={handleAddProducts}
+            />
 
             <p className="text-xs text-center text-muted-foreground px-2">
               Você será redirecionado para o WhatsApp para confirmar seu agendamento
