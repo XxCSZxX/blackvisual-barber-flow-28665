@@ -46,39 +46,53 @@ const Admin = () => {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (roleRow) {
+        setIsAdmin(true);
+        setLoading(false);
+        return;
+      }
+
+      // Check if there is no admin at all to allow bootstrap
+      const { data: allAdmins, error: adminCheckError } = await supabase
+        .from("user_roles")
+        .select("id")
+        .eq("role", "admin")
+        .limit(1);
+
+      if (adminCheckError) {
+        console.error('Erro ao verificar admins:', adminCheckError);
+        toast.error("Erro ao verificar permissões");
+        navigate("/");
+        return;
+      }
+
+      if (!allAdmins || allAdmins.length === 0) {
+        setCanClaimAdmin(true);
+        setLoading(false);
+        return;
+      }
+
+      toast.error("Você não tem permissão de administrador");
+      navigate("/");
+    } catch (error) {
+      console.error("Erro na autenticação:", error);
+      toast.error("Erro ao verificar autenticação");
+      navigate("/");
     }
-
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", session.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (roleRow) {
-      setIsAdmin(true);
-      setLoading(false);
-      return;
-    }
-
-    // Check if there is no admin at all to allow bootstrap
-    const { data: hasAdmin, error: adminCheckError } = await supabase.rpc('any_admin_exists');
-    if (adminCheckError) {
-      console.error('Erro ao verificar admins:', adminCheckError);
-    }
-
-    if (!hasAdmin) {
-      setCanClaimAdmin(true);
-      setLoading(false);
-      return;
-    }
-
-    toast.error("Você não tem permissão de administrador");
-    navigate("/");
   };
 
   const loadData = async () => {
@@ -323,8 +337,19 @@ const Admin = () => {
               <Button
                 className="w-full btn-3d"
                 onClick={async () => {
-                  const { error } = await supabase.rpc('claim_admin');
+                  const { data: { session } } = await supabase.auth.getSession();
+                  if (!session) {
+                    toast.error('Sessão expirada');
+                    navigate('/auth');
+                    return;
+                  }
+
+                  const { error } = await supabase
+                    .from("user_roles")
+                    .insert({ user_id: session.user.id, role: "admin" });
+
                   if (error) {
+                    console.error('Erro ao criar admin:', error);
                     toast.error(error.message || 'Não foi possível tornar-se admin');
                     return;
                   }

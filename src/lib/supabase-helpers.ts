@@ -74,3 +74,13 @@ export const getUserRoles = async (userId: string) => {
   
   return { data: data as UserRole[] | null, error };
 };
+
+export const createUserRole = async (userId: string, role: 'admin' | 'user') => {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .insert({ user_id: userId, role })
+    .select()
+    .single();
+  
+  return { data: data as UserRole | null, error };
+};
