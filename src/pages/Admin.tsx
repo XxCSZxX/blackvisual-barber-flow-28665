@@ -20,7 +20,9 @@ const Admin = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [coupons, setCoupons] = useState<DiscountCoupon[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [newService, setNewService] = useState({
     title: "",
     description: "",
@@ -38,6 +40,13 @@ const Admin = () => {
     discount_value: "",
     max_uses: "",
     expires_at: "",
+  });
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    description: "",
+    price: "",
+    image: "",
+    category: "consumivel",
   });
 
   useEffect(() => {
@@ -96,15 +105,17 @@ const Admin = () => {
   };
 
   const loadData = async () => {
-    const [servicesRes, timeSlotsRes, couponsRes] = await Promise.all([
+    const [servicesRes, timeSlotsRes, couponsRes, productsRes] = await Promise.all([
       supabase.from("services").select("*").order("created_at"),
       supabase.from("time_slots").select("*").order("display_order"),
       supabase.from("discount_coupons").select("*").order("created_at", { ascending: false }),
+      supabase.from("products").select("*").eq("category", "consumivel").order("created_at"),
     ]);
 
     if (servicesRes.data) setServices(servicesRes.data);
     if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data);
     if (couponsRes.data) setCoupons(couponsRes.data);
+    if (productsRes.data) setProducts(productsRes.data);
   };
 
   const handleLogout = async () => {
@@ -318,6 +329,104 @@ const Admin = () => {
     loadData();
   };
 
+  const handleAddProduct = async () => {
+    if (!newProduct.name || !newProduct.price) {
+      toast.error("Preencha nome e preço");
+      return;
+    }
+
+    let imageUrl = newProduct.image;
+
+    if (selectedFile) {
+      const uploadedUrl = await uploadImage(selectedFile);
+      if (!uploadedUrl) return;
+      imageUrl = uploadedUrl;
+    }
+
+    const { error } = await supabase.from("products").insert({
+      name: newProduct.name,
+      description: newProduct.description,
+      price: parseFloat(newProduct.price),
+      image: imageUrl || "/placeholder.svg",
+      category: "consumivel",
+      active: true,
+    });
+
+    if (error) {
+      toast.error("Erro ao adicionar produto");
+      console.error(error);
+      return;
+    }
+
+    toast.success("Produto adicionado!");
+    setNewProduct({ name: "", description: "", price: "", image: "", category: "consumivel" });
+    setSelectedFile(null);
+    loadData();
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!editingProduct) return;
+
+    let imageUrl = editingProduct.image;
+
+    if (selectedFile) {
+      const uploadedUrl = await uploadImage(selectedFile);
+      if (!uploadedUrl) return;
+      imageUrl = uploadedUrl;
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        name: editingProduct.name,
+        description: editingProduct.description,
+        price: editingProduct.price,
+        image: imageUrl,
+      })
+      .eq("id", editingProduct.id);
+
+    if (error) {
+      toast.error("Erro ao atualizar produto");
+      console.error(error);
+      return;
+    }
+
+    toast.success("Produto atualizado!");
+    setEditingProduct(null);
+    setSelectedFile(null);
+    loadData();
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir?")) return;
+
+    const { error } = await supabase.from("products").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Erro ao excluir produto");
+      console.error(error);
+      return;
+    }
+
+    toast.success("Produto excluído!");
+    loadData();
+  };
+
+  const handleToggleProduct = async (id: string, currentActive: boolean) => {
+    const { error } = await supabase
+      .from("products")
+      .update({ active: !currentActive })
+      .eq("id", id);
+
+    if (error) {
+      toast.error("Erro ao atualizar");
+      return;
+    }
+
+    toast.success(currentActive ? "Produto desativado" : "Produto ativado");
+    loadData();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -386,8 +495,9 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="services">Cortes</TabsTrigger>
+            <TabsTrigger value="products">Produtos</TabsTrigger>
             <TabsTrigger value="times">Horários</TabsTrigger>
             <TabsTrigger value="coupons">Cupons</TabsTrigger>
           </TabsList>
@@ -557,6 +667,212 @@ const Admin = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => handleDeleteService(service.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="products" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Adicionar Novo Produto Consumível</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome do Produto</Label>
+                    <Input
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                      placeholder="Ex: Pomada Modeladora"
+                    />
+                  </div>
+                  <div>
+                    <Label>Preço (R$)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                      placeholder="45.00"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>Descrição</Label>
+                  <Textarea
+                    value={newProduct.description}
+                    onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                    placeholder="Descrição do produto"
+                  />
+                </div>
+                <div>
+                  <Label>Imagem do Produto</Label>
+                  <div className="space-y-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      disabled={uploading}
+                      className="cursor-pointer"
+                    />
+                    {selectedFile && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>📷 {selectedFile.name}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setSelectedFile(null)}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <Button onClick={handleAddProduct} className="w-full btn-3d" disabled={uploading}>
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Fazendo upload...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Produto
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4">
+              {products.map((product) => (
+                <Card key={product.id}>
+                  <CardContent className="p-4">
+                    {editingProduct?.id === product.id ? (
+                      <div className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <Label>Nome</Label>
+                            <Input
+                              value={editingProduct.name}
+                              onChange={(e) =>
+                                setEditingProduct({ ...editingProduct, name: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label>Preço</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={editingProduct.price}
+                              onChange={(e) =>
+                                setEditingProduct({
+                                  ...editingProduct,
+                                  price: parseFloat(e.target.value),
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label>Descrição</Label>
+                          <Textarea
+                            value={editingProduct.description}
+                            onChange={(e) =>
+                              setEditingProduct({ ...editingProduct, description: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <Label>Imagem</Label>
+                          <div className="space-y-3">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileSelect}
+                              disabled={uploading}
+                              className="cursor-pointer"
+                            />
+                            {selectedFile && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>📷 {selectedFile.name}</span>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setSelectedFile(null)}
+                                >
+                                  ✕
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button onClick={handleUpdateProduct} className="btn-3d" disabled={uploading}>
+                            {uploading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Fazendo upload...
+                              </>
+                            ) : (
+                              "Salvar"
+                            )}
+                          </Button>
+                          <Button variant="outline" onClick={() => {
+                            setEditingProduct(null);
+                            setSelectedFile(null);
+                          }}>
+                            Cancelar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          {product.image && (
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="w-16 h-16 object-cover rounded-lg"
+                            />
+                          )}
+                          <div>
+                            <h3 className="font-bold">{product.name}</h3>
+                            <p className="text-sm text-muted-foreground">{product.description}</p>
+                            <p className="text-primary font-black mt-1">
+                              R$ {product.price?.toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleToggleProduct(product.id, product.active)}
+                          >
+                            {product.active ? "Desativar" : "Ativar"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingProduct(product)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteProduct(product.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
