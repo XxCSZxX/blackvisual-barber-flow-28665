@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import heroBackground from "@/assets/hero-background.jpg";
+import heroBackground from "@/assets/cruvinel-hero-bg.jpg";
 
 const Hero = () => {
   const [displayText, setDisplayText] = useState("");
