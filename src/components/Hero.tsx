@@ -4,7 +4,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 
 const Hero = () => {
   const [displayText, setDisplayText] = useState("");
-  const fullText = "Blackvisual — Corte com atitude";
+  const fullText = "Cruvinel's Barbearia — Corte com atitude";
 
   useEffect(() => {
     let currentIndex = 0;
@@ -31,7 +31,7 @@ const Hero = () => {
       <div className="absolute inset-0">
         <img 
           src={heroBackground} 
-          alt="Blackvisual Premium Barbershop" 
+          alt="Cruvinel's Barbearia Premium Barbershop" 
           className="w-full h-full object-cover"
         />
         {/* Dark overlay for text readability */}

@@ -117,7 +117,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       })
       .join("\n\n");
 
-    let message = `Olá Blackvisual! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
+    let message = `Olá Cruvinel's Barbearia! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
     
     if (appliedCoupon) {
       message += `💰 Subtotal: R$ ${subtotal.toFixed(2)}\n`;

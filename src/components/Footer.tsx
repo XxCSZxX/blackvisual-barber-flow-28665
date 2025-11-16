@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
           <div className="space-y-3 md:space-y-4">
-            <h3 className="text-xl md:text-2xl font-black">Blackvisual</h3>
+            <h3 className="text-xl md:text-2xl font-black">Cruvinel's Barbearia</h3>
             <p className="text-muted-foreground text-sm md:text-base">
               Barbearia premium em Brasília/Goiânia.<br />
               Cortes modernos e atendimento de qualidade.
@@ -51,14 +51,14 @@ const Footer = () => {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Localização Blackvisual"
+                title="Localização Cruvinel's Barbearia"
               ></iframe>
             </div>
           </div>
         </div>
 
         <div className="border-t border-border pt-6 md:pt-8 text-center text-muted-foreground text-xs md:text-sm">
-          <p>&copy; {new Date().getFullYear()} Blackvisual. Todos os direitos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Cruvinel's Barbearia. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

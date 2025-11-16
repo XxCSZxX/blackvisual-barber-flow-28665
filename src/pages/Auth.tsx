@@ -84,7 +84,7 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6 bg-card p-8 rounded-3xl border border-border/50">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-black">Blackvisual Admin</h1>
+          <h1 className="text-3xl font-black">Cruvinel's Barbearia Admin</h1>
           <p className="text-muted-foreground">
             {isLogin ? "Entre para gerenciar" : "Crie sua conta admin"}
           </p>
