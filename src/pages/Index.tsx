@@ -250,7 +250,7 @@ const Index = () => {
       {/* About Section */}
       <section id="sobre" className="py-20 bg-card">
         <div className="container mx-auto px-4 text-center max-w-4xl">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6">Sobre a Blackvisual</h2>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6">Sobre a Cruvinel's Barbearia</h2>
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6 md:mb-8">
             Somos uma barbearia premium especializada em cortes masculinos modernos,
             oferecendo atendimento de qualidade e ambiente exclusivo para homens que

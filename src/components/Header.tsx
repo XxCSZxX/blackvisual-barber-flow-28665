@@ -39,7 +39,7 @@ const Header = () => {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
         <div className="flex items-center gap-4 md:gap-8">
           <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-foreground tracking-tighter">
-            Blackvisual
+            Cruvinel's Barbearia
           </h1>
           
           {/* Desktop Navigation */}
