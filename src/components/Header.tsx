@@ -58,7 +58,7 @@ const Header = () => {
           </Link>
           
           <a
-            href="https://instagram.com/Blackbaber"
+            href="https://instagram.com/cruvinelsbarbearia"
             target="_blank"
             rel="noopener noreferrer"
             className="text-foreground hover:text-accent transition-colors"
