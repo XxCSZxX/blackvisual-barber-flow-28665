@@ -65,7 +65,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
               <DialogTitle className="text-2xl md:text-3xl font-black break-all">{service.title}</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-4 md:space-y-6 pb-6">
               <div className="aspect-video rounded-2xl overflow-hidden border border-border/50">
                 <img
                   src={service.image}
