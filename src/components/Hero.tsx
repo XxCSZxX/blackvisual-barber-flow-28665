@@ -4,7 +4,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 
 const Hero = () => {
   const [displayText, setDisplayText] = useState("");
-  const fullText = "Cruvinel's Barbearia — Corte com atitude";
+  const fullText = "Cruvinel's Barbearia — Um novo conceito, uma nova experiência";
 
   useEffect(() => {
     let currentIndex = 0;
