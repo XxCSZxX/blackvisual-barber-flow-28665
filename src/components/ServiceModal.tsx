@@ -58,7 +58,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border/50 max-w-2xl animate-scale-in shadow-2xl">
+      <DialogContent className="bg-card border-border/50 max-w-2xl animate-scale-in shadow-2xl max-h-[90vh] overflow-y-auto">
         {service && (
           <>
             <DialogHeader>
