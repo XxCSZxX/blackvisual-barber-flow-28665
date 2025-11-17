@@ -24,7 +24,7 @@ const Loader3D = () => {
           </div>
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-4xl font-black text-foreground tracking-tighter">BV</span>
+          <span className="text-4xl font-black text-foreground tracking-tighter">Cruvinel's</span>
         </div>
       </div>
     </div>
