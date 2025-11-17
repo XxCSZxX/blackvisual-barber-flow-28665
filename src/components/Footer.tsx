@@ -8,7 +8,7 @@ const Footer = () => {
           <div className="space-y-3 md:space-y-4">
             <h3 className="text-xl md:text-2xl font-black">Cruvinel's Barbearia</h3>
             <p className="text-muted-foreground text-sm md:text-base">
-              Barbearia premium em Brasília/Goiânia.<br />
+              Barbearia premium em Goiás/Goiânia - GO.<br />
               Cortes modernos e atendimento de qualidade.
             </p>
 

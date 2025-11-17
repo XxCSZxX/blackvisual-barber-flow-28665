@@ -254,7 +254,7 @@ const Index = () => {
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6 md:mb-8">
             Somos uma barbearia premium especializada em cortes masculinos modernos,
             oferecendo atendimento de qualidade e ambiente exclusivo para homens que
-            buscam estilo e profissionalismo em Brasília/Goiânia.
+            buscam estilo e profissionalismo em Goiás/Goiânia - GO.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
             <div className="space-y-2">
