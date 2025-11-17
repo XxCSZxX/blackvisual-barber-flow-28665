@@ -419,7 +419,8 @@ const Admin = () => {
       .eq("id", id);
 
     if (error) {
-      toast.error("Erro ao atualizar");
+      console.error("Erro ao atualizar produto:", error);
+      toast.error("Erro ao atualizar produto");
       return;
     }
 
