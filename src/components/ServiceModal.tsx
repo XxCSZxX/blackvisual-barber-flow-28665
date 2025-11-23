@@ -29,7 +29,6 @@ interface ServiceModalProps {
 
 const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps) => {
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("pix");
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<string>("");
@@ -48,12 +47,11 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
   };
 
   const handleProceed = () => {
-    if (name.trim() && phone.trim() && service && selectedBarber) {
+    if (name.trim() && service && selectedBarber) {
       const barber = barbers.find(b => b.id === selectedBarber);
       if (barber) {
-        onProceed(name, phone, service, paymentMethod, barber);
+        onProceed(name, "", service, paymentMethod, barber);
         setName("");
-        setPhone("");
         setPaymentMethod("pix");
       }
     }
@@ -93,19 +91,6 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite seu nome"
-                  className="bg-secondary border-border/50 text-foreground py-5 md:py-6 text-sm md:text-base focus:border-accent transition-colors"
-                />
-              </div>
-
-              <div className="space-y-2 md:space-y-3">
-                <Label htmlFor="phone" className="text-foreground text-sm md:text-base">
-                  Seu telefone
-                </Label>
-                <Input
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(00) 00000-0000"
                   className="bg-secondary border-border/50 text-foreground py-5 md:py-6 text-sm md:text-base focus:border-accent transition-colors"
                 />
               </div>
@@ -154,7 +139,7 @@ const ServiceModal = ({ isOpen, onClose, service, onProceed }: ServiceModalProps
 
               <Button
                 onClick={handleProceed}
-                disabled={!name.trim() || !phone.trim() || !selectedBarber}
+                disabled={!name.trim() || !selectedBarber}
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/95 font-bold text-base md:text-lg py-6 md:py-7 rounded-xl btn-3d disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Agendar este corte
