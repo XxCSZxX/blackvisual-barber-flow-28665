@@ -23,6 +23,7 @@ const fallbackImages: Record<string, string> = {
 };
 
 interface Service {
+  id: string;
   title: string;
   description: string;
   price: number;
@@ -40,8 +41,10 @@ interface Barber {
 
 interface CartItem {
   id: string;
+  serviceId: string;
   name: string;
   customerName: string;
+  customerPhone: string;
   price: number;
   date: Date;
   time: string;
@@ -65,6 +68,7 @@ const Index = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentBooking, setCurrentBooking] = useState<{
     name: string;
+    phone: string;
     service: Service;
     paymentMethod: string;
     barber: Barber;
@@ -90,6 +94,7 @@ const Index = () => {
             : fallbackImages[s.image] || s.image;
           
           return {
+            id: s.id,
             title: s.title,
             description: s.description,
             price: Number(s.price),
@@ -110,8 +115,8 @@ const Index = () => {
     }
   };
 
-  const handleProceedToCalendar = (name: string, service: Service, paymentMethod: string, barber: Barber) => {
-    setCurrentBooking({ name, service, paymentMethod, barber });
+  const handleProceedToCalendar = (name: string, phone: string, service: Service, paymentMethod: string, barber: Barber) => {
+    setCurrentBooking({ name, phone, service, paymentMethod, barber });
     setShowModal(false);
     setShowCalendar(true);
   };
@@ -120,8 +125,10 @@ const Index = () => {
     if (currentBooking) {
       const newItem: CartItem = {
         id: `${Date.now()}`,
+        serviceId: currentBooking.service.id,
         name: currentBooking.service.title,
         customerName: currentBooking.name,
+        customerPhone: currentBooking.phone,
         price: currentBooking.service.price,
         date,
         time,
@@ -292,6 +299,7 @@ const Index = () => {
             <CalendarBooking
               onBookingComplete={handleBookingComplete}
               onCancel={() => setShowCalendar(false)}
+              barberId={currentBooking.barber.id}
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { supabase } from "@/integrations/supabase/client";
-import type { Product, Service, Barber, TimeSlot, DiscountCoupon, UserRole } from "@/types/database";
+import type { Product, Service, Barber, TimeSlot, DiscountCoupon, UserRole, Booking } from "@/types/database";
 
 // Helper functions with proper typing to work around empty Supabase types
 // These provide type safety while the Supabase types file is being regenerated
@@ -83,4 +83,29 @@ export const createUserRole = async (userId: string, role: 'admin' | 'user') => 
     .single();
   
   return { data: data as UserRole | null, error };
+};
+
+export const getBookedTimes = async (date: string, barberId?: string) => {
+  let query = supabase
+    .from("bookings")
+    .select("booking_time")
+    .eq("booking_date", date)
+    .in("status", ["pending", "confirmed"]);
+  
+  if (barberId) {
+    query = query.eq("barber_id", barberId);
+  }
+  
+  const { data, error } = await query;
+  return { data: data as Pick<Booking, 'booking_time'>[] | null, error };
+};
+
+export const createBooking = async (booking: Omit<Booking, 'id' | 'created_at' | 'updated_at' | 'status'>) => {
+  const { data, error } = await supabase
+    .from("bookings")
+    .insert(booking)
+    .select()
+    .single();
+  
+  return { data: data as Booking | null, error };
 };

@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import ProductSuggestions from "./ProductSuggestions";
-import { getDiscountCoupon } from "@/lib/supabase-helpers";
+import { getDiscountCoupon, createBooking } from "@/lib/supabase-helpers";
 import type { DiscountCoupon } from "@/types/database";
 
 interface Barber {
@@ -29,8 +29,10 @@ interface Product {
 
 interface CartItem {
   id: string;
+  serviceId: string;
   name: string;
   customerName: string;
+  customerPhone: string;
   price: number;
   date: Date;
   time: string;
@@ -132,8 +134,26 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     return encodeURIComponent(message);
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (items.length === 0) return;
+    
+    // Save bookings to database
+    try {
+      for (const item of items) {
+        await createBooking({
+          booking_date: format(item.date, "yyyy-MM-dd"),
+          booking_time: item.time,
+          barber_id: item.barber.id,
+          service_id: item.serviceId,
+          customer_name: item.customerName,
+          customer_phone: item.customerPhone,
+        });
+      }
+    } catch (error) {
+      console.error("Error saving bookings:", error);
+      toast.error("Erro ao salvar agendamentos. Tente novamente.");
+      return;
+    }
     
     // Group items by barber
     const itemsByBarber = items.reduce((acc, item) => {
