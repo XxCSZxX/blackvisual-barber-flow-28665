@@ -4,30 +4,44 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getTimeSlots } from "@/lib/supabase-helpers";
+import { getTimeSlots, getBookedTimes } from "@/lib/supabase-helpers";
 
 interface CalendarBookingProps {
   onBookingComplete: (date: Date, time: string) => void;
   onCancel: () => void;
+  barberId?: string;
 }
 
-const CalendarBooking = ({ onBookingComplete, onCancel }: CalendarBookingProps) => {
+const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBookingProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
-
-  // Simulated blocked times (would come from backend)
-  const blockedTimes = ["11:00", "15:00"];
+  const [blockedTimes, setBlockedTimes] = useState<string[]>([]);
 
   useEffect(() => {
     loadTimeSlots();
   }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      loadBlockedTimes(selectedDate);
+    }
+  }, [selectedDate, barberId]);
 
   const loadTimeSlots = async () => {
     const { data } = await getTimeSlots({ active: true });
 
     if (data) {
       setTimeSlots(data.map((slot) => slot.time));
+    }
+  };
+
+  const loadBlockedTimes = async (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    const { data } = await getBookedTimes(dateStr, barberId);
+
+    if (data) {
+      setBlockedTimes(data.map((booking) => booking.booking_time));
     }
   };
 

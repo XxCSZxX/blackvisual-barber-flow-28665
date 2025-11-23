@@ -63,3 +63,16 @@ export interface UserRole {
   role: 'admin' | 'user' | 'moderator';
   created_at: string;
 }
+
+export interface Booking {
+  id: string;
+  booking_date: string;
+  booking_time: string;
+  barber_id: string;
+  service_id: string;
+  customer_name: string;
+  customer_phone: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+}
