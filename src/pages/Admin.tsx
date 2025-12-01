@@ -16,7 +16,6 @@ const Admin = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [canClaimAdmin, setCanClaimAdmin] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [coupons, setCoupons] = useState<DiscountCoupon[]>([]);
@@ -71,26 +70,6 @@ const Admin = () => {
 
       if (roleRow) {
         setIsAdmin(true);
-        setLoading(false);
-        return;
-      }
-
-      // Check if there is no admin at all to allow bootstrap
-      const { data: allAdmins, error: adminCheckError } = await supabase
-        .from("user_roles")
-        .select("id")
-        .eq("role", "admin")
-        .limit(1);
-
-      if (adminCheckError) {
-        console.error('Erro ao verificar admins:', adminCheckError);
-        toast.error("Erro ao verificar permissões");
-        navigate("/");
-        return;
-      }
-
-      if (!allAdmins || allAdmins.length === 0) {
-        setCanClaimAdmin(true);
         setLoading(false);
         return;
       }
@@ -440,45 +419,9 @@ const Admin = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-full max-w-md bg-card border border-border rounded-3xl p-6 text-center space-y-4">
-          {canClaimAdmin ? (
-            <>
-              <h1 className="text-2xl font-black">Configurar administrador</h1>
-              <p className="text-muted-foreground">Nenhum administrador encontrado. Torne-se o primeiro admin desta barbearia.</p>
-              <Button
-                className="w-full btn-3d"
-                onClick={async () => {
-                  const { data: { session } } = await supabase.auth.getSession();
-                  if (!session) {
-                    toast.error('Sessão expirada');
-                    navigate('/auth');
-                    return;
-                  }
-
-                  const { error } = await supabase
-                    .from("user_roles")
-                    .insert({ user_id: session.user.id, role: "admin" });
-
-                  if (error) {
-                    console.error('Erro ao criar admin:', error);
-                    toast.error(error.message || 'Não foi possível tornar-se admin');
-                    return;
-                  }
-                  toast.success('Você agora é administrador!');
-                  setIsAdmin(true);
-                  setCanClaimAdmin(false);
-                }}
-              >
-                Tornar-me Admin
-              </Button>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Voltar</Button>
-            </>
-          ) : (
-            <>
-              <h1 className="text-2xl font-black">Acesso negado</h1>
-              <p className="text-muted-foreground">Você não tem permissão de administrador.</p>
-              <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Voltar</Button>
-            </>
-          )}
+          <h1 className="text-2xl font-black">Acesso negado</h1>
+          <p className="text-muted-foreground">Você não tem permissão de administrador.</p>
+          <Button variant="outline" className="w-full" onClick={() => navigate('/')}>Voltar</Button>
         </div>
       </div>
     );
