@@ -33,9 +33,9 @@ const Footer = () => {
                 <span>+55 62 99149-2590</span>
               </a>
 
-              <div className="flex items-center gap-2 text-muted-foreground text-sm md:text-base">
-                <MapPin className="w-4 h-4 md:w-5 md:h-5" />
-                <span>Goiás/Goiânia - GO</span>
+              <div className="flex items-start gap-2 text-muted-foreground text-sm md:text-base">
+                <MapPin className="w-4 h-4 md:w-5 md:h-5 mt-0.5 flex-shrink-0" />
+                <span>Av. Firenze, Qd 4 - Lt 15 - Jardim Abaporu, Goiânia - GO, 74786-003</span>
               </div>
             </div>
           </div>
