@@ -44,7 +44,7 @@ const Footer = () => {
             <h3 className="text-lg md:text-xl font-bold">Localização</h3>
             <div className="aspect-video rounded-2xl overflow-hidden border border-border">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d245867.6238186357!2d-49.39397!3d-16.686892!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x935ef6bd58d80d69%3A0x6788cce3e2e5df73!2zR29pw6JuaWE!5e0!3m2!1spt-BR!2sbr!4v1234567890"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3821.8!2d-49.3285!3d-16.7519!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x935ef1234567890%3A0xabcdef!2sAv.%20Firenze%2C%20Qd%204%20-%20Lt%2015%20-%20Jardim%20Abaporu%2C%20Goi%C3%A2nia%20-%20GO%2C%2074786-003!5e0!3m2!1spt-BR!2sbr!4v1700000000000"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
