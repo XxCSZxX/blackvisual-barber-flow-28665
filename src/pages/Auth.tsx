@@ -11,7 +11,6 @@ import { getUserRoles } from "@/lib/supabase-helpers";
 const Auth = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -24,13 +23,11 @@ const Auth = () => {
       navigate(isAdmin ? "/admin" : "/");
     };
 
-    // Check if user is already logged in and redirect accordingly
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted || !session) return;
       redirectByRole(session.user.id);
     });
 
-    // Listen to auth state changes and redirect accordingly
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) return;
       redirectByRole(session.user.id);
@@ -42,39 +39,26 @@ const Auth = () => {
     };
   }, [navigate]);
 
-  const handleAuth = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast.success("Login realizado com sucesso!");
-        // Redireciona conforme a role do usuário
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const { data: roles } = await getUserRoles(session.user.id);
-          const isAdmin = roles?.some(r => r.role === "admin") ?? false;
-          navigate(isAdmin ? "/admin" : "/");
-        }
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-          },
-        });
-        if (error) throw error;
-        toast.success("Conta criada! Faça login para continuar.");
-        setIsLogin(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      toast.success("Login realizado com sucesso!");
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: roles } = await getUserRoles(session.user.id);
+        const isAdmin = roles?.some(r => r.role === "admin") ?? false;
+        navigate(isAdmin ? "/admin" : "/");
       }
     } catch (error: any) {
-      toast.error(error.message || "Erro ao autenticar");
+      toast.error(error.message || "Erro ao fazer login");
     } finally {
       setLoading(false);
     }
@@ -84,13 +68,11 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6 bg-card p-8 rounded-3xl border border-border/50">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-black">Cruvinel's Barbearia Admin</h1>
-          <p className="text-muted-foreground">
-            {isLogin ? "Entre para gerenciar" : "Crie sua conta admin"}
-          </p>
+          <h1 className="text-3xl font-black">Cruvinel's Barbearia</h1>
+          <p className="text-muted-foreground">Acesso administrativo</p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -126,20 +108,20 @@ const Auth = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processando...
+                Entrando...
               </>
             ) : (
-              <>{isLogin ? "Entrar" : "Criar conta"}</>
+              "Entrar"
             )}
           </Button>
         </form>
 
         <div className="text-center">
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => navigate('/')}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            {isLogin ? "Não tem conta? Criar conta" : "Já tem conta? Fazer login"}
+            Voltar para o site
           </button>
         </div>
       </div>
