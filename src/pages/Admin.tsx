@@ -50,6 +50,7 @@ const Admin = () => {
     image: "",
     category: "consumivel",
   });
+  const [togglingSlot, setTogglingSlot] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -128,40 +129,47 @@ const Admin = () => {
   };
 
   const handleToggleBarberTimeSlot = async (timeSlotId: string) => {
+    if (togglingSlot) return; // Prevent multiple clicks
+    
+    setTogglingSlot(timeSlotId);
     const isAssigned = barberTimeSlots.includes(timeSlotId);
     
-    if (isAssigned) {
-      // Remove the time slot from barber
-      const { error } = await supabase
-        .from("barber_time_slots")
-        .delete()
-        .eq("barber_id", selectedBarberForSlots)
-        .eq("time_slot_id", timeSlotId);
-      
-      if (error) {
-        toast.error("Erro ao remover horário");
-        return;
+    try {
+      if (isAssigned) {
+        // Remove the time slot from barber
+        const { error } = await supabase
+          .from("barber_time_slots")
+          .delete()
+          .eq("barber_id", selectedBarberForSlots)
+          .eq("time_slot_id", timeSlotId);
+        
+        if (error) {
+          toast.error("Erro ao remover horário");
+          return;
+        }
+        
+        setBarberTimeSlots(prev => prev.filter(id => id !== timeSlotId));
+        toast.success("Horário removido");
+      } else {
+        // Add the time slot to barber
+        const { error } = await supabase
+          .from("barber_time_slots")
+          .insert({
+            barber_id: selectedBarberForSlots,
+            time_slot_id: timeSlotId,
+            active: true
+          });
+        
+        if (error) {
+          toast.error("Erro ao adicionar horário");
+          return;
+        }
+        
+        setBarberTimeSlots(prev => [...prev, timeSlotId]);
+        toast.success("Horário adicionado");
       }
-      
-      setBarberTimeSlots(prev => prev.filter(id => id !== timeSlotId));
-      toast.success("Horário removido do barbeiro");
-    } else {
-      // Add the time slot to barber
-      const { error } = await supabase
-        .from("barber_time_slots")
-        .insert({
-          barber_id: selectedBarberForSlots,
-          time_slot_id: timeSlotId,
-          active: true
-        });
-      
-      if (error) {
-        toast.error("Erro ao adicionar horário");
-        return;
-      }
-      
-      setBarberTimeSlots(prev => [...prev, timeSlotId]);
-      toast.success("Horário adicionado ao barbeiro");
+    } finally {
+      setTogglingSlot(null);
     }
   };
 
@@ -944,16 +952,24 @@ const Admin = () => {
                   <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                     {timeSlots.map((slot) => {
                       const isAssigned = barberTimeSlots.includes(slot.id);
+                      const isToggling = togglingSlot === slot.id;
                       return (
                         <Button
                           key={slot.id}
                           onClick={() => handleToggleBarberTimeSlot(slot.id)}
                           variant={isAssigned ? "default" : "outline"}
+                          disabled={togglingSlot !== null}
                           className={`relative ${isAssigned ? "bg-accent text-accent-foreground" : ""}`}
                         >
-                          {slot.time}
-                          {isAssigned && (
-                            <Check className="h-3 w-3 absolute top-1 right-1" />
+                          {isToggling ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              {slot.time}
+                              {isAssigned && (
+                                <Check className="h-3 w-3 absolute top-1 right-1" />
+                              )}
+                            </>
                           )}
                         </Button>
                       );
