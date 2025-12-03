@@ -145,23 +145,27 @@ const Admin = () => {
         
         if (error) {
           toast.error("Erro ao remover horário");
+          await loadBarberTimeSlots();
           return;
         }
         
         setBarberTimeSlots(prev => prev.filter(id => id !== timeSlotId));
         toast.success("Horário removido");
       } else {
-        // Add the time slot to barber
+        // Add the time slot to barber using upsert to avoid duplicates
         const { error } = await supabase
           .from("barber_time_slots")
-          .insert({
+          .upsert({
             barber_id: selectedBarberForSlots,
             time_slot_id: timeSlotId,
             active: true
+          }, {
+            onConflict: 'barber_id,time_slot_id'
           });
         
         if (error) {
           toast.error("Erro ao adicionar horário");
+          await loadBarberTimeSlots();
           return;
         }
         
