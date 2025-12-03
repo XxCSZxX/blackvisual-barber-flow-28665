@@ -9,8 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, LogOut, Plus, Pencil, Trash2 } from "lucide-react";
-import type { Service, TimeSlot, DiscountCoupon } from "@/types/database";
+import { Loader2, LogOut, Plus, Pencil, Trash2, Check } from "lucide-react";
+import type { Service, TimeSlot, DiscountCoupon, Barber } from "@/types/database";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -20,6 +20,9 @@ const Admin = () => {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [coupons, setCoupons] = useState<DiscountCoupon[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [selectedBarberForSlots, setSelectedBarberForSlots] = useState<string>("");
+  const [barberTimeSlots, setBarberTimeSlots] = useState<string[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [newService, setNewService] = useState({
@@ -84,17 +87,82 @@ const Admin = () => {
   };
 
   const loadData = async () => {
-    const [servicesRes, timeSlotsRes, couponsRes, productsRes] = await Promise.all([
+    const [servicesRes, timeSlotsRes, couponsRes, productsRes, barbersRes] = await Promise.all([
       supabase.from("services").select("*").order("created_at"),
       supabase.from("time_slots").select("*").order("display_order"),
       supabase.from("discount_coupons").select("*").order("created_at", { ascending: false }),
       supabase.from("products").select("*").eq("category", "consumivel").order("created_at"),
+      supabase.from("barbers").select("*").order("name"),
     ]);
 
     if (servicesRes.data) setServices(servicesRes.data);
     if (timeSlotsRes.data) setTimeSlots(timeSlotsRes.data);
     if (couponsRes.data) setCoupons(couponsRes.data);
     if (productsRes.data) setProducts(productsRes.data);
+    if (barbersRes.data) {
+      setBarbers(barbersRes.data);
+      if (barbersRes.data.length > 0 && !selectedBarberForSlots) {
+        setSelectedBarberForSlots(barbersRes.data[0].id);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (selectedBarberForSlots) {
+      loadBarberTimeSlots();
+    }
+  }, [selectedBarberForSlots]);
+
+  const loadBarberTimeSlots = async () => {
+    if (!selectedBarberForSlots) return;
+    
+    const { data } = await supabase
+      .from("barber_time_slots")
+      .select("time_slot_id")
+      .eq("barber_id", selectedBarberForSlots)
+      .eq("active", true);
+    
+    if (data) {
+      setBarberTimeSlots(data.map((item: any) => item.time_slot_id));
+    }
+  };
+
+  const handleToggleBarberTimeSlot = async (timeSlotId: string) => {
+    const isAssigned = barberTimeSlots.includes(timeSlotId);
+    
+    if (isAssigned) {
+      // Remove the time slot from barber
+      const { error } = await supabase
+        .from("barber_time_slots")
+        .delete()
+        .eq("barber_id", selectedBarberForSlots)
+        .eq("time_slot_id", timeSlotId);
+      
+      if (error) {
+        toast.error("Erro ao remover horário");
+        return;
+      }
+      
+      setBarberTimeSlots(prev => prev.filter(id => id !== timeSlotId));
+      toast.success("Horário removido do barbeiro");
+    } else {
+      // Add the time slot to barber
+      const { error } = await supabase
+        .from("barber_time_slots")
+        .insert({
+          barber_id: selectedBarberForSlots,
+          time_slot_id: timeSlotId,
+          active: true
+        });
+      
+      if (error) {
+        toast.error("Erro ao adicionar horário");
+        return;
+      }
+      
+      setBarberTimeSlots(prev => [...prev, timeSlotId]);
+      toast.success("Horário adicionado ao barbeiro");
+    }
   };
 
   const handleLogout = async () => {
@@ -849,22 +917,73 @@ const Admin = () => {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {timeSlots.map((slot) => (
-                <Card key={slot.id}>
-                  <CardContent className="p-4 flex justify-between items-center">
-                    <span className="font-bold">{slot.time}</span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDeleteTimeSlot(slot.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Horários por Barbeiro</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Selecione o Barbeiro</Label>
+                  <select
+                    value={selectedBarberForSlots}
+                    onChange={(e) => setSelectedBarberForSlots(e.target.value)}
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2"
+                  >
+                    {barbers.map((barber) => (
+                      <option key={barber.id} value={barber.id}>
+                        {barber.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Clique nos horários para ativar/desativar para este barbeiro
+                  </p>
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                    {timeSlots.map((slot) => {
+                      const isAssigned = barberTimeSlots.includes(slot.id);
+                      return (
+                        <Button
+                          key={slot.id}
+                          onClick={() => handleToggleBarberTimeSlot(slot.id)}
+                          variant={isAssigned ? "default" : "outline"}
+                          className={`relative ${isAssigned ? "bg-accent text-accent-foreground" : ""}`}
+                        >
+                          {slot.time}
+                          {isAssigned && (
+                            <Check className="h-3 w-3 absolute top-1 right-1" />
+                          )}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Todos os Horários</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {timeSlots.map((slot) => (
+                    <div key={slot.id} className="p-4 border rounded-lg flex justify-between items-center">
+                      <span className="font-bold">{slot.time}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteTimeSlot(slot.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="coupons" className="space-y-6">

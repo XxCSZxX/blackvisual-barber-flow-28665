@@ -76,3 +76,11 @@ export interface Booking {
   created_at: string;
   updated_at: string;
 }
+
+export interface BarberTimeSlot {
+  id: string;
+  barber_id: string;
+  time_slot_id: string;
+  active: boolean;
+  created_at: string;
+}

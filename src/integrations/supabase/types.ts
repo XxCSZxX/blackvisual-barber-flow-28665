@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      barber_time_slots: {
+        Row: {
+          active: boolean | null
+          barber_id: string
+          created_at: string | null
+          id: string
+          time_slot_id: string
+        }
+        Insert: {
+          active?: boolean | null
+          barber_id: string
+          created_at?: string | null
+          id?: string
+          time_slot_id: string
+        }
+        Update: {
+          active?: boolean | null
+          barber_id?: string
+          created_at?: string | null
+          id?: string
+          time_slot_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barber_time_slots_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barber_time_slots_time_slot_id_fkey"
+            columns: ["time_slot_id"]
+            isOneToOne: false
+            referencedRelation: "time_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbers: {
         Row: {
           active: boolean | null

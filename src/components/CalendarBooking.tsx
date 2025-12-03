@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { getTimeSlots, getBookedTimes } from "@/lib/supabase-helpers";
+import { getTimeSlotsForBarber, getBookedTimes } from "@/lib/supabase-helpers";
 
 interface CalendarBookingProps {
   onBookingComplete: (date: Date, time: string) => void;
@@ -19,20 +19,24 @@ const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBook
   const [blockedTimes, setBlockedTimes] = useState<string[]>([]);
 
   useEffect(() => {
-    loadTimeSlots();
-  }, []);
+    if (barberId) {
+      loadTimeSlots();
+    }
+  }, [barberId]);
 
   useEffect(() => {
-    if (selectedDate) {
+    if (selectedDate && barberId) {
       loadBlockedTimes(selectedDate);
     }
   }, [selectedDate, barberId]);
 
   const loadTimeSlots = async () => {
-    const { data } = await getTimeSlots({ active: true });
+    if (!barberId) return;
+    
+    const { data } = await getTimeSlotsForBarber(barberId);
 
     if (data) {
-      setTimeSlots(data.map((slot) => slot.time));
+      setTimeSlots(data.map((slot: any) => slot.time));
     }
   };
 
@@ -72,29 +76,35 @@ const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBook
           <h3 className="text-lg md:text-2xl font-bold">
             Horários - {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
           </h3>
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
-            {timeSlots.map((time) => {
-              const isBlocked = blockedTimes.includes(time);
-              const isSelected = selectedTime === time;
+          {timeSlots.length === 0 ? (
+            <p className="text-muted-foreground text-center py-4">
+              Este barbeiro não tem horários configurados.
+            </p>
+          ) : (
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
+              {timeSlots.map((time) => {
+                const isBlocked = blockedTimes.includes(time);
+                const isSelected = selectedTime === time;
 
-              return (
-                <Button
-                  key={time}
-                  onClick={() => !isBlocked && setSelectedTime(time)}
-                  disabled={isBlocked}
-                  variant={isSelected ? "default" : "outline"}
-                  className={cn(
-                    "font-bold rounded-lg md:rounded-xl py-4 md:py-6 text-sm md:text-base transition-all",
-                    isSelected && "bg-accent text-accent-foreground btn-3d scale-105",
-                    !isSelected && !isBlocked && "hover:scale-105 hover:border-accent",
-                    isBlocked && "opacity-30 cursor-not-allowed"
-                  )}
-                >
-                  {time}
-                </Button>
-              );
-            })}
-          </div>
+                return (
+                  <Button
+                    key={time}
+                    onClick={() => !isBlocked && setSelectedTime(time)}
+                    disabled={isBlocked}
+                    variant={isSelected ? "default" : "outline"}
+                    className={cn(
+                      "font-bold rounded-lg md:rounded-xl py-4 md:py-6 text-sm md:text-base transition-all",
+                      isSelected && "bg-accent text-accent-foreground btn-3d scale-105",
+                      !isSelected && !isBlocked && "hover:scale-105 hover:border-accent",
+                      isBlocked && "opacity-30 cursor-not-allowed"
+                    )}
+                  >
+                    {time}
+                  </Button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
