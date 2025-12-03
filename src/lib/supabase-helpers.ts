@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { supabase } from "@/integrations/supabase/client";
-import type { Product, Service, Barber, TimeSlot, DiscountCoupon, UserRole, Booking } from "@/types/database";
+import type { Product, Service, Barber, TimeSlot, DiscountCoupon, UserRole, Booking, BarberTimeSlot } from "@/types/database";
 
 // Helper functions with proper typing to work around empty Supabase types
 // These provide type safety while the Supabase types file is being regenerated
@@ -53,6 +53,37 @@ export const getTimeSlots = async (filters?: { active?: boolean }) => {
   
   const { data, error } = await query;
   return { data: data as TimeSlot[] | null, error };
+};
+
+export const getBarberTimeSlots = async (barberId: string) => {
+  const { data, error } = await supabase
+    .from("barber_time_slots")
+    .select("*, time_slots(*)")
+    .eq("barber_id", barberId)
+    .eq("active", true);
+  
+  return { data, error };
+};
+
+export const getTimeSlotsForBarber = async (barberId: string) => {
+  const { data, error } = await supabase
+    .from("barber_time_slots")
+    .select("time_slot_id, time_slots(time, display_order)")
+    .eq("barber_id", barberId)
+    .eq("active", true);
+  
+  if (data) {
+    const slots = data
+      .filter((item: any) => item.time_slots)
+      .map((item: any) => ({
+        time: item.time_slots.time,
+        display_order: item.time_slots.display_order
+      }))
+      .sort((a: any, b: any) => a.display_order - b.display_order);
+    return { data: slots, error: null };
+  }
+  
+  return { data: null, error };
 };
 
 export const getDiscountCoupon = async (code: string) => {
