@@ -570,6 +570,7 @@ const Admin = () => {
                     <option value="corte-masculino">Corte Masculino</option>
                     <option value="barba">Barba</option>
                     <option value="sombrancelha">Sombrancelha</option>
+                    <option value="depilacao">Depilação</option>
                     <option value="produtos-consumiveis">Produtos Consumíveis</option>
                   </select>
                 </div>
