@@ -217,6 +217,16 @@ const Index = () => {
               Sombrancelha
             </button>
             <button
+              onClick={() => setSelectedCategory("depilacao")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "depilacao"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Depilação
+            </button>
+            <button
               onClick={() => setSelectedCategory("produtos-consumiveis")}
               className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
                 selectedCategory === "produtos-consumiveis"
