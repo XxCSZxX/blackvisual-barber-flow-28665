@@ -32,6 +32,7 @@ const Admin = () => {
     image: "",
     slug: "",
     category: "corte-masculino",
+    duration_slots: "1",
   });
   const [newTimeSlot, setNewTimeSlot] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -248,6 +249,7 @@ const Admin = () => {
       image: imageUrl || "/placeholder.svg",
       slug: newService.slug || newService.title.toLowerCase().replace(/\s+/g, "-"),
       category: newService.category,
+      duration_slots: parseInt(newService.duration_slots) || 1,
     });
 
     if (error) {
@@ -256,7 +258,7 @@ const Admin = () => {
     }
 
     toast.success("Corte adicionado!");
-    setNewService({ title: "", description: "", price: "", image: "", slug: "", category: "corte-masculino" });
+    setNewService({ title: "", description: "", price: "", image: "", slug: "", category: "corte-masculino", duration_slots: "1" });
     setSelectedFile(null);
     loadData();
   };
@@ -572,6 +574,18 @@ const Admin = () => {
                     <option value="sombrancelha">Sombrancelha</option>
                     <option value="depilacao">Depilação</option>
                     <option value="produtos-consumiveis">Produtos Consumíveis</option>
+                  </select>
+                </div>
+                <div>
+                  <Label>Duração (slots de 30min)</Label>
+                  <select
+                    value={newService.duration_slots}
+                    onChange={(e) => setNewService({ ...newService, duration_slots: e.target.value })}
+                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                  >
+                    <option value="1">1 slot (30min)</option>
+                    <option value="2">2 slots (60min) - Combo</option>
+                    <option value="3">3 slots (90min)</option>
                   </select>
                 </div>
                 <div>

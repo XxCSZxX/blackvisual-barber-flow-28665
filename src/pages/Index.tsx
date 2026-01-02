@@ -30,6 +30,7 @@ interface Service {
   image: string;
   slug: string;
   category?: string;
+  durationSlots?: number;
 }
 
 interface Barber {
@@ -48,9 +49,11 @@ interface CartItem {
   price: number;
   date: Date;
   time: string;
+  endTime?: string;
   image: string;
   paymentMethod: string;
   barber: Barber;
+  durationSlots?: number;
   products?: Array<{
     id: string;
     name: string;
@@ -101,6 +104,7 @@ const Index = () => {
             image: imageUrl,
             slug: s.slug,
             category: s.category,
+            durationSlots: s.duration_slots || 1,
           };
         })
       );
@@ -121,7 +125,7 @@ const Index = () => {
     setShowCalendar(true);
   };
 
-  const handleBookingComplete = (date: Date, time: string) => {
+  const handleBookingComplete = (date: Date, time: string, endTime?: string) => {
     if (currentBooking) {
       const newItem: CartItem = {
         id: `${Date.now()}`,
@@ -132,9 +136,11 @@ const Index = () => {
         price: currentBooking.service.price,
         date,
         time,
+        endTime,
         image: currentBooking.service.image,
         paymentMethod: currentBooking.paymentMethod,
         barber: currentBooking.barber,
+        durationSlots: currentBooking.service.durationSlots || 1,
       };
 
       setCartItems([...cartItems, newItem]);
@@ -310,6 +316,7 @@ const Index = () => {
               onBookingComplete={handleBookingComplete}
               onCancel={() => setShowCalendar(false)}
               barberId={currentBooking.barber.id}
+              durationSlots={currentBooking.service.durationSlots || 1}
             />
           </div>
         </div>
