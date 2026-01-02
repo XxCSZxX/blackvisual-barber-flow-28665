@@ -10,6 +10,7 @@ export interface Service {
   slug: string;
   category: string;
   active: boolean;
+  duration_slots: number;
   created_at: string;
   updated_at: string;
 }

@@ -7,12 +7,13 @@ import { ptBR } from "date-fns/locale";
 import { getTimeSlotsForBarber, getBookedTimes } from "@/lib/supabase-helpers";
 
 interface CalendarBookingProps {
-  onBookingComplete: (date: Date, time: string) => void;
+  onBookingComplete: (date: Date, time: string, endTime?: string) => void;
   onCancel: () => void;
   barberId?: string;
+  durationSlots?: number;
 }
 
-const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBookingProps) => {
+const CalendarBooking = ({ onBookingComplete, onCancel, barberId, durationSlots = 1 }: CalendarBookingProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
@@ -49,9 +50,44 @@ const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBook
     }
   };
 
+  // Calculate end time based on duration slots (each slot = 30 min)
+  const getEndTime = (startTime: string, slots: number): string => {
+    const [hours, minutes] = startTime.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes + (slots * 30);
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`;
+  };
+
+  // Get consecutive time slots starting from a given time
+  const getConsecutiveSlots = (startTime: string, count: number): string[] => {
+    const startIndex = timeSlots.indexOf(startTime);
+    if (startIndex === -1) return [];
+    
+    const slots: string[] = [];
+    for (let i = 0; i < count; i++) {
+      if (startIndex + i < timeSlots.length) {
+        slots.push(timeSlots[startIndex + i]);
+      }
+    }
+    return slots;
+  };
+
+  // Check if a time slot can be selected (has enough consecutive available slots)
+  const canSelectTime = (time: string): boolean => {
+    const consecutiveSlots = getConsecutiveSlots(time, durationSlots);
+    
+    // Need exactly durationSlots consecutive slots
+    if (consecutiveSlots.length < durationSlots) return false;
+    
+    // None of the required slots can be blocked
+    return !consecutiveSlots.some(slot => blockedTimes.includes(slot));
+  };
+
   const handleConfirm = () => {
     if (selectedDate && selectedTime) {
-      onBookingComplete(selectedDate, selectedTime);
+      const endTime = durationSlots > 1 ? getEndTime(selectedTime, durationSlots) : undefined;
+      onBookingComplete(selectedDate, selectedTime, endTime);
     }
   };
 
@@ -75,6 +111,7 @@ const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBook
         <div className="animate-fade-in space-y-3 md:space-y-4">
           <h3 className="text-lg md:text-2xl font-bold">
             Horários - {format(selectedDate, "dd/MM/yyyy", { locale: ptBR })}
+            {durationSlots > 1 && <span className="text-sm font-normal text-muted-foreground ml-2">(duração: {durationSlots * 30}min)</span>}
           </h3>
           {timeSlots.length === 0 ? (
             <p className="text-muted-foreground text-center py-4">
@@ -85,21 +122,26 @@ const CalendarBooking = ({ onBookingComplete, onCancel, barberId }: CalendarBook
               {timeSlots.map((time) => {
                 const isBlocked = blockedTimes.includes(time);
                 const isSelected = selectedTime === time;
+                const canSelect = canSelectTime(time);
+                const endTime = getEndTime(time, durationSlots);
 
                 return (
                   <Button
                     key={time}
-                    onClick={() => !isBlocked && setSelectedTime(time)}
-                    disabled={isBlocked}
+                    onClick={() => canSelect && setSelectedTime(time)}
+                    disabled={!canSelect}
                     variant={isSelected ? "default" : "outline"}
                     className={cn(
-                      "font-bold rounded-lg md:rounded-xl py-4 md:py-6 text-sm md:text-base transition-all",
+                      "font-bold rounded-lg md:rounded-xl py-4 md:py-6 text-sm md:text-base transition-all flex flex-col",
                       isSelected && "bg-accent text-accent-foreground btn-3d scale-105",
-                      !isSelected && !isBlocked && "hover:scale-105 hover:border-accent",
-                      isBlocked && "opacity-30 cursor-not-allowed"
+                      !isSelected && canSelect && "hover:scale-105 hover:border-accent",
+                      !canSelect && "opacity-30 cursor-not-allowed"
                     )}
                   >
-                    {time}
+                    <span>{time}</span>
+                    {durationSlots > 1 && isSelected && (
+                      <span className="text-xs opacity-80">até {endTime}</span>
+                    )}
                   </Button>
                 );
               })}

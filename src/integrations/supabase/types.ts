@@ -218,6 +218,7 @@ export type Database = {
           category: string
           created_at: string | null
           description: string
+          duration_slots: number
           id: string
           image: string
           price: number
@@ -230,6 +231,7 @@ export type Database = {
           category?: string
           created_at?: string | null
           description: string
+          duration_slots?: number
           id?: string
           image: string
           price: number
@@ -242,6 +244,7 @@ export type Database = {
           category?: string
           created_at?: string | null
           description?: string
+          duration_slots?: number
           id?: string
           image?: string
           price?: number

@@ -36,9 +36,11 @@ interface CartItem {
   price: number;
   date: Date;
   time: string;
+  endTime?: string;
   image: string;
   paymentMethod: string;
   barber: Barber;
+  durationSlots?: number;
   products?: Product[];
 }
 
@@ -134,20 +136,40 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     return encodeURIComponent(message);
   };
 
+  // Helper to get consecutive time slots
+  const getConsecutiveTimeSlots = (startTime: string, count: number): string[] => {
+    const slots: string[] = [startTime];
+    const [hours, minutes] = startTime.split(":").map(Number);
+    
+    for (let i = 1; i < count; i++) {
+      const totalMinutes = hours * 60 + minutes + (i * 30);
+      const slotHours = Math.floor(totalMinutes / 60);
+      const slotMinutes = totalMinutes % 60;
+      slots.push(`${slotHours.toString().padStart(2, "0")}:${slotMinutes.toString().padStart(2, "0")}`);
+    }
+    return slots;
+  };
+
   const handleFinish = async () => {
     if (items.length === 0) return;
     
-    // Save bookings to database
+    // Save bookings to database (including multiple slots for combo services)
     try {
       for (const item of items) {
-        await createBooking({
-          booking_date: format(item.date, "yyyy-MM-dd"),
-          booking_time: item.time,
-          barber_id: item.barber.id,
-          service_id: item.serviceId,
-          customer_name: item.customerName,
-          customer_phone: item.customerPhone,
-        });
+        const slotsToBook = item.durationSlots || 1;
+        const timeSlots = getConsecutiveTimeSlots(item.time, slotsToBook);
+        
+        // Create a booking for each time slot
+        for (const slotTime of timeSlots) {
+          await createBooking({
+            booking_date: format(item.date, "yyyy-MM-dd"),
+            booking_time: slotTime,
+            barber_id: item.barber.id,
+            service_id: item.serviceId,
+            customer_name: item.customerName,
+            customer_phone: item.customerPhone,
+          });
+        }
       }
     } catch (error) {
       console.error("Error saving bookings:", error);
@@ -174,7 +196,8 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
         .map((item) => {
           const dateFormatted = format(item.date, "dd/MM/yyyy", { locale: ptBR });
           const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
-          let itemText = `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
+          const timeDisplay = item.endTime ? `${item.time} - ${item.endTime}` : item.time;
+          let itemText = `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${timeDisplay}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
           
           if (item.products && item.products.length > 0) {
             itemText += "\n\n🛍️ Produtos adicionais:";
@@ -249,6 +272,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
                     <p className="text-xs md:text-sm text-muted-foreground truncate">{item.customerName}</p>
                     <p className="text-xs md:text-sm text-muted-foreground">
                       {format(item.date, "dd/MM/yyyy", { locale: ptBR })} às {item.time}
+                      {item.endTime && ` - ${item.endTime}`}
                     </p>
                     <p className="text-xs md:text-sm text-muted-foreground">
                       💳 {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
