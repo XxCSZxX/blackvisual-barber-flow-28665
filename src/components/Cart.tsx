@@ -155,29 +155,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
   const handleFinish = async () => {
     if (items.length === 0) return;
     
-    // Save bookings to database (including multiple slots for combo services)
-    try {
-      for (const item of items) {
-        const slotsToBook = item.durationSlots || 1;
-        const timeSlots = getConsecutiveTimeSlots(item.time, slotsToBook);
-        
-        // Create a booking for each time slot
-        for (const slotTime of timeSlots) {
-          await createBooking({
-            booking_date: format(item.date, "yyyy-MM-dd"),
-            booking_time: slotTime,
-            barber_id: item.barber.id,
-            service_id: item.serviceId,
-            customer_name: item.customerName,
-            customer_phone: item.customerPhone,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error saving bookings:", error);
-      toast.error("Erro ao salvar agendamentos. Tente novamente.");
-      return;
-    }
+    // Bookings are already created when added to cart, so we just send WhatsApp messages
     
     // Group items by barber
     const itemsByBarber = items.reduce((acc, item) => {

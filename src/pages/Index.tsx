@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { toast } from "sonner";
 import Loader3D from "@/components/Loader3D";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -9,7 +11,7 @@ import Cart from "@/components/Cart";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SuccessCheck from "@/components/SuccessCheck";
 import Footer from "@/components/Footer";
-import { getServices } from "@/lib/supabase-helpers";
+import { getServices, createBooking } from "@/lib/supabase-helpers";
 
 // Fallback images for legacy services
 import corteModerno from "@/assets/corte-masculino.jpg";
@@ -125,8 +127,44 @@ const Index = () => {
     setShowCalendar(true);
   };
 
-  const handleBookingComplete = (date: Date, time: string, endTime?: string) => {
+  // Helper to get consecutive time slots (matching database format without leading zeros)
+  const getConsecutiveTimeSlots = (startTime: string, count: number): string[] => {
+    const slots: string[] = [startTime];
+    const [hours, minutes] = startTime.split(":").map(Number);
+    
+    for (let i = 1; i < count; i++) {
+      const totalMinutes = hours * 60 + minutes + (i * 30);
+      const slotHours = Math.floor(totalMinutes / 60);
+      const slotMinutes = totalMinutes % 60;
+      const formattedTime = `${slotHours}:${slotMinutes.toString().padStart(2, "0")}`;
+      slots.push(formattedTime);
+    }
+    return slots;
+  };
+
+  const handleBookingComplete = async (date: Date, time: string, endTime?: string) => {
     if (currentBooking) {
+      const durationSlots = currentBooking.service.durationSlots || 1;
+      const timeSlots = getConsecutiveTimeSlots(time, durationSlots);
+      
+      // Create bookings immediately to block the time slots
+      try {
+        for (const slotTime of timeSlots) {
+          await createBooking({
+            booking_date: format(date, "yyyy-MM-dd"),
+            booking_time: slotTime,
+            barber_id: currentBooking.barber.id,
+            service_id: currentBooking.service.id,
+            customer_name: currentBooking.name,
+            customer_phone: currentBooking.phone,
+          });
+        }
+      } catch (error) {
+        console.error("Error creating booking:", error);
+        toast.error("Erro ao reservar horário. Tente novamente.");
+        return;
+      }
+
       const newItem: CartItem = {
         id: `${Date.now()}`,
         serviceId: currentBooking.service.id,
@@ -140,12 +178,13 @@ const Index = () => {
         image: currentBooking.service.image,
         paymentMethod: currentBooking.paymentMethod,
         barber: currentBooking.barber,
-        durationSlots: currentBooking.service.durationSlots || 1,
+        durationSlots,
       };
 
       setCartItems([...cartItems, newItem]);
       setShowCalendar(false);
       setCurrentBooking(null);
+      toast.success("Horário reservado com sucesso!");
     }
   };
 
