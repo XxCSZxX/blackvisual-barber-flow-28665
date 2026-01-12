@@ -136,7 +136,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     return encodeURIComponent(message);
   };
 
-  // Helper to get consecutive time slots
+  // Helper to get consecutive time slots (matching database format without leading zeros for hours)
   const getConsecutiveTimeSlots = (startTime: string, count: number): string[] => {
     const slots: string[] = [startTime];
     const [hours, minutes] = startTime.split(":").map(Number);
@@ -145,7 +145,9 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       const totalMinutes = hours * 60 + minutes + (i * 30);
       const slotHours = Math.floor(totalMinutes / 60);
       const slotMinutes = totalMinutes % 60;
-      slots.push(`${slotHours.toString().padStart(2, "0")}:${slotMinutes.toString().padStart(2, "0")}`);
+      // Format to match database format: "8:00" not "08:00"
+      const formattedTime = `${slotHours}:${slotMinutes.toString().padStart(2, "0")}`;
+      slots.push(formattedTime);
     }
     return slots;
   };
