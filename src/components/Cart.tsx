@@ -212,9 +212,18 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
 
       const productsOnlyTotal = productItems.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
       const grandTotal = barberTotal + productsOnlyTotal;
+      const finalTotal = Math.max(grandTotal - discount, 0);
       
       let message = `Olá ${barber.name}! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}${productsText}\n\n`;
-      message += `💵 Total: R$ ${grandTotal.toFixed(2)}\n\n`;
+      
+      if (appliedCoupon) {
+        message += `💰 Subtotal: R$ ${grandTotal.toFixed(2)}\n`;
+        message += `🎟️ Cupom ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
+        message += `💵 Total: R$ ${finalTotal.toFixed(2)}\n\n`;
+      } else {
+        message += `💵 Total: R$ ${grandTotal.toFixed(2)}\n\n`;
+      }
+      
       message += `Aguardo confirmação!`;
 
       const encodedMessage = encodeURIComponent(message);
@@ -229,9 +238,18 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       ).join("\n");
 
       const productsTotal = productItems.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
+      const finalProductsTotal = Math.max(productsTotal - discount, 0);
       
       let message = `Olá Cruvinel's Barbearia! 💈\n\nQuero comprar os seguintes produtos:\n\n${productsText}\n\n`;
-      message += `💵 Total: R$ ${productsTotal.toFixed(2)}\n\n`;
+      
+      if (appliedCoupon) {
+        message += `💰 Subtotal: R$ ${productsTotal.toFixed(2)}\n`;
+        message += `🎟️ Cupom ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
+        message += `💵 Total: R$ ${finalProductsTotal.toFixed(2)}\n\n`;
+      } else {
+        message += `💵 Total: R$ ${productsTotal.toFixed(2)}\n\n`;
+      }
+      
       message += `Aguardo confirmação!`;
 
       const encodedMessage = encodeURIComponent(message);
