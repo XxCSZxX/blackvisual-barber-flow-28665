@@ -31,16 +31,18 @@ interface CartItem {
   id: string;
   serviceId: string;
   name: string;
-  customerName: string;
-  customerPhone: string;
+  customerName?: string;
+  customerPhone?: string;
   price: number;
-  date: Date;
-  time: string;
+  date?: Date;
+  time?: string;
   endTime?: string;
   image: string;
-  paymentMethod: string;
-  barber: Barber;
+  paymentMethod?: string;
+  barber?: Barber;
   durationSlots?: number;
+  isProduct?: boolean;
+  quantity?: number;
   products?: Product[];
 }
 
@@ -58,7 +60,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
   const [showProductSuggestions, setShowProductSuggestions] = useState(false);
 
   const subtotal = items.reduce((sum, item) => {
-    const itemTotal = item.price;
+    const itemTotal = item.price * (item.quantity || 1);
     const productsTotal = item.products?.reduce((pSum, p) => pSum + (p.price * (p.quantity || 1)), 0) || 0;
     return sum + itemTotal + productsTotal;
   }, 0);
@@ -156,13 +158,17 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     if (items.length === 0) return;
     
     // Bookings are already created when added to cart, so we just send WhatsApp messages
-    
-    // Group items by barber
-    const itemsByBarber = items.reduce((acc, item) => {
-      const barberId = item.barber.id;
+
+    // Separate products (no barber) from services (with barber)
+    const serviceItems = items.filter(item => !item.isProduct && item.barber);
+    const productItems = items.filter(item => item.isProduct);
+
+    // Group service items by barber
+    const itemsByBarber = serviceItems.reduce((acc, item) => {
+      const barberId = item.barber!.id;
       if (!acc[barberId]) {
         acc[barberId] = {
-          barber: item.barber,
+          barber: item.barber!,
           items: []
         };
       }
@@ -170,11 +176,11 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       return acc;
     }, {} as Record<string, { barber: Barber; items: CartItem[] }>);
 
-    // Send to each barber's WhatsApp
+    // Send to each barber's WhatsApp (services)
     Object.values(itemsByBarber).forEach(({ barber, items: barberItems }) => {
       const itemsText = barberItems
         .map((item) => {
-          const dateFormatted = format(item.date, "dd/MM/yyyy", { locale: ptBR });
+          const dateFormatted = item.date ? format(item.date, "dd/MM/yyyy", { locale: ptBR }) : "";
           const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
           const timeDisplay = item.endTime ? `${item.time} - ${item.endTime}` : item.time;
           let itemText = `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${timeDisplay}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
@@ -190,20 +196,48 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
         })
         .join("\n\n");
 
+      // Add products to barber message if any
+      let productsText = "";
+      if (productItems.length > 0) {
+        productsText = "\n\n🛍️ Produtos:\n" + productItems.map(p => 
+          `  • ${p.name} (${p.quantity || 1}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`
+        ).join("\n");
+      }
+
       const barberTotal = barberItems.reduce((sum, item) => {
         const itemTotal = item.price;
         const productsTotal = item.products?.reduce((pSum, p) => pSum + (p.price * (p.quantity || 1)), 0) || 0;
         return sum + itemTotal + productsTotal;
       }, 0);
+
+      const productsOnlyTotal = productItems.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
+      const grandTotal = barberTotal + productsOnlyTotal;
       
-      let message = `Olá ${barber.name}! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
-      message += `💵 Total: R$ ${barberTotal.toFixed(2)}\n\n`;
+      let message = `Olá ${barber.name}! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}${productsText}\n\n`;
+      message += `💵 Total: R$ ${grandTotal.toFixed(2)}\n\n`;
       message += `Aguardo confirmação!`;
 
       const encodedMessage = encodeURIComponent(message);
       const whatsappNumber = barber.whatsapp.replace(/\D/g, '');
       window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
     });
+
+    // If only products (no services), send to a default barber or show message
+    if (serviceItems.length === 0 && productItems.length > 0) {
+      const productsText = productItems.map(p => 
+        `🛍️ ${p.name} (${p.quantity || 1}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`
+      ).join("\n");
+
+      const productsTotal = productItems.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
+      
+      let message = `Olá Cruvinel's Barbearia! 💈\n\nQuero comprar os seguintes produtos:\n\n${productsText}\n\n`;
+      message += `💵 Total: R$ ${productsTotal.toFixed(2)}\n\n`;
+      message += `Aguardo confirmação!`;
+
+      const encodedMessage = encodeURIComponent(message);
+      // Use first available barber's WhatsApp or a default number
+      window.open(`https://wa.me/5562991492590?text=${encodedMessage}`, "_blank");
+    }
     
     onFinish();
   };
@@ -248,16 +282,30 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
                     className="w-16 md:w-20 h-16 md:h-20 rounded-xl object-cover flex-shrink-0"
                   />
                   <div className="flex-1 space-y-0.5 md:space-y-1 min-w-0">
-                    <h4 className="font-bold text-foreground text-sm md:text-base truncate">{item.name}</h4>
-                    <p className="text-xs md:text-sm text-muted-foreground truncate">{item.customerName}</p>
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      {format(item.date, "dd/MM/yyyy", { locale: ptBR })} às {item.time}
-                      {item.endTime && ` - ${item.endTime}`}
+                    <h4 className="font-bold text-foreground text-sm md:text-base truncate">
+                      {item.name}
+                      {item.isProduct && item.quantity && item.quantity > 1 && ` (${item.quantity}x)`}
+                    </h4>
+                    {!item.isProduct && (
+                      <>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">{item.customerName}</p>
+                        {item.date && (
+                          <p className="text-xs md:text-sm text-muted-foreground">
+                            {format(item.date, "dd/MM/yyyy", { locale: ptBR })} às {item.time}
+                            {item.endTime && ` - ${item.endTime}`}
+                          </p>
+                        )}
+                        <p className="text-xs md:text-sm text-muted-foreground">
+                          💳 {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
+                        </p>
+                      </>
+                    )}
+                    {item.isProduct && (
+                      <p className="text-xs md:text-sm text-muted-foreground">🛍️ Produto</p>
+                    )}
+                    <p className="text-metallic font-bold text-sm md:text-base">
+                      R$ {(item.price * (item.quantity || 1)).toFixed(2)}
                     </p>
-                    <p className="text-xs md:text-sm text-muted-foreground">
-                      💳 {item.paymentMethod === "pix" ? "PIX" : "Cartão"}
-                    </p>
-                    <p className="text-metallic font-bold text-sm md:text-base">R$ {item.price.toFixed(2)}</p>
                     {item.products && item.products.length > 0 && (
                       <div className="mt-2 pt-2 border-t border-border">
                         <p className="text-xs font-semibold text-muted-foreground mb-1">Produtos:</p>

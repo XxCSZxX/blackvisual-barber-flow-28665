@@ -46,16 +46,18 @@ interface CartItem {
   id: string;
   serviceId: string;
   name: string;
-  customerName: string;
-  customerPhone: string;
+  customerName?: string;
+  customerPhone?: string;
   price: number;
-  date: Date;
-  time: string;
+  date?: Date;
+  time?: string;
   endTime?: string;
   image: string;
-  paymentMethod: string;
-  barber: Barber;
+  paymentMethod?: string;
+  barber?: Barber;
   durationSlots?: number;
+  isProduct?: boolean;
+  quantity?: number;
   products?: Array<{
     id: string;
     name: string;
@@ -116,6 +118,23 @@ const Index = () => {
   const handleSelectService = (slug: string) => {
     const service = services.find((s) => s.slug === slug);
     if (service) {
+      // Produtos consumíveis vão direto para o carrinho
+      if (service.category === "produtos-consumiveis") {
+        const newItem: CartItem = {
+          id: `${Date.now()}`,
+          serviceId: service.id,
+          name: service.title,
+          price: service.price,
+          image: service.image,
+          isProduct: true,
+          quantity: 1,
+        };
+        setCartItems([...cartItems, newItem]);
+        toast.success("Produto adicionado ao carrinho!");
+        return;
+      }
+      
+      // Serviços normais abrem o modal de agendamento
       setSelectedService(service);
       setShowModal(true);
     }
