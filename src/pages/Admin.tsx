@@ -576,18 +576,20 @@ const Admin = () => {
                     <option value="produtos-consumiveis">Produtos Consumíveis</option>
                   </select>
                 </div>
-                <div>
-                  <Label>Duração (slots de 30min)</Label>
-                  <select
-                    value={newService.duration_slots}
-                    onChange={(e) => setNewService({ ...newService, duration_slots: e.target.value })}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  >
-                    <option value="1">1 slot (30min)</option>
-                    <option value="2">2 slots (60min) - Combo</option>
-                    <option value="3">3 slots (90min)</option>
-                  </select>
-                </div>
+                {newService.category !== "produtos-consumiveis" && (
+                  <div>
+                    <Label>Duração (slots de 30min)</Label>
+                    <select
+                      value={newService.duration_slots}
+                      onChange={(e) => setNewService({ ...newService, duration_slots: e.target.value })}
+                      className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                    >
+                      <option value="1">1 slot (30min)</option>
+                      <option value="2">2 slots (60min) - Combo</option>
+                      <option value="3">3 slots (90min)</option>
+                    </select>
+                  </div>
+                )}
                 <div>
                   <Label>Imagem do Corte</Label>
                   <div className="space-y-3">
