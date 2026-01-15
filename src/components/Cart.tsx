@@ -157,11 +157,34 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
   const handleFinish = async () => {
     if (items.length === 0) return;
     
-    // Bookings are already created when added to cart, so we just send WhatsApp messages
-
     // Separate products (no barber) from services (with barber)
     const serviceItems = items.filter(item => !item.isProduct && item.barber);
     const productItems = items.filter(item => item.isProduct);
+
+    // Create bookings in database NOW (only when user clicks "Finalizar no WhatsApp")
+    for (const item of serviceItems) {
+      if (item.date && item.time && item.barber) {
+        const durationSlots = item.durationSlots || 1;
+        const timeSlots = getConsecutiveTimeSlots(item.time, durationSlots);
+        
+        try {
+          for (const slotTime of timeSlots) {
+            await createBooking({
+              booking_date: format(item.date, "yyyy-MM-dd"),
+              booking_time: slotTime,
+              barber_id: item.barber.id,
+              service_id: item.serviceId,
+              customer_name: item.customerName || "",
+              customer_phone: item.customerPhone || "",
+            });
+          }
+        } catch (error) {
+          console.error("Error creating booking:", error);
+          toast.error(`Erro ao reservar horário para ${item.name}. Tente novamente.`);
+          return;
+        }
+      }
+    }
 
     // Group service items by barber
     const itemsByBarber = serviceItems.reduce((acc, item) => {

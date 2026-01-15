@@ -11,7 +11,7 @@ import Cart from "@/components/Cart";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import SuccessCheck from "@/components/SuccessCheck";
 import Footer from "@/components/Footer";
-import { getServices, createBooking } from "@/lib/supabase-helpers";
+import { getServices } from "@/lib/supabase-helpers";
 
 // Fallback images for legacy services
 import corteModerno from "@/assets/corte-masculino.jpg";
@@ -164,26 +164,8 @@ const Index = () => {
   const handleBookingComplete = async (date: Date, time: string, endTime?: string) => {
     if (currentBooking) {
       const durationSlots = currentBooking.service.durationSlots || 1;
-      const timeSlots = getConsecutiveTimeSlots(time, durationSlots);
-      
-      // Create bookings immediately to block the time slots
-      try {
-        for (const slotTime of timeSlots) {
-          await createBooking({
-            booking_date: format(date, "yyyy-MM-dd"),
-            booking_time: slotTime,
-            barber_id: currentBooking.barber.id,
-            service_id: currentBooking.service.id,
-            customer_name: currentBooking.name,
-            customer_phone: currentBooking.phone,
-          });
-        }
-      } catch (error) {
-        console.error("Error creating booking:", error);
-        toast.error("Erro ao reservar horário. Tente novamente.");
-        return;
-      }
 
+      // Add to cart only - booking will be created when user clicks "Finalizar no WhatsApp"
       const newItem: CartItem = {
         id: `${Date.now()}`,
         serviceId: currentBooking.service.id,
@@ -203,7 +185,7 @@ const Index = () => {
       setCartItems([...cartItems, newItem]);
       setShowCalendar(false);
       setCurrentBooking(null);
-      toast.success("Horário reservado com sucesso!");
+      toast.success("Serviço adicionado ao carrinho!");
     }
   };
 
