@@ -100,7 +100,13 @@ const CalendarBooking = ({ onBookingComplete, onCancel, barberId, durationSlots 
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            disabled={(date) => date < new Date() || date.getDay() === 0}
+            disabled={(date) => {
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const compareDate = new Date(date);
+              compareDate.setHours(0, 0, 0, 0);
+              return compareDate < today || date.getDay() === 0;
+            }}
             locale={ptBR}
             className={cn("pointer-events-auto scale-90 md:scale-100")}
           />
