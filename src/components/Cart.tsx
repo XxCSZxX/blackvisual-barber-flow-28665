@@ -8,7 +8,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import ProductSuggestions from "./ProductSuggestions";
-import { getDiscountCoupon, createBooking } from "@/lib/supabase-helpers";
+import { getDiscountCoupon, createBooking, getBookedTimes } from "@/lib/supabase-helpers";
+import { supabase } from "@/integrations/supabase/client";
 import type { DiscountCoupon } from "@/types/database";
 
 interface Barber {
@@ -166,11 +167,30 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       if (item.date && item.time && item.barber) {
         const durationSlots = item.durationSlots || 1;
         const timeSlots = getConsecutiveTimeSlots(item.time, durationSlots);
+        const bookingDate = format(item.date, "yyyy-MM-dd");
         
         try {
+          // Verificar disponibilidade antes de criar a reserva
+          for (const slotTime of timeSlots) {
+            const { data: existingBooking } = await supabase
+              .from("bookings")
+              .select("id")
+              .eq("booking_date", bookingDate)
+              .eq("booking_time", slotTime)
+              .eq("barber_id", item.barber.id)
+              .in("status", ["pending", "confirmed"])
+              .maybeSingle();
+
+            if (existingBooking) {
+              toast.error(`Horário ${slotTime} já foi reservado. Por favor, escolha outro horário.`);
+              return;
+            }
+          }
+
+          // Criar as reservas após verificar disponibilidade
           for (const slotTime of timeSlots) {
             await createBooking({
-              booking_date: format(item.date, "yyyy-MM-dd"),
+              booking_date: bookingDate,
               booking_time: slotTime,
               barber_id: item.barber.id,
               service_id: item.serviceId,
@@ -178,9 +198,14 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
               customer_phone: item.customerPhone || "",
             });
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error creating booking:", error);
-          toast.error(`Erro ao reservar horário para ${item.name}. Tente novamente.`);
+          // Tratar erro de constraint única (duplicata)
+          if (error?.code === "23505" || error?.message?.includes("unique_booking_slot")) {
+            toast.error(`Horário já reservado por outro cliente. Por favor, escolha outro horário.`);
+          } else {
+            toast.error(`Erro ao reservar horário para ${item.name}. Tente novamente.`);
+          }
           return;
         }
       }
