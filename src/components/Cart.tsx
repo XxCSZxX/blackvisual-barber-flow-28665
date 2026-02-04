@@ -162,6 +162,24 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     const serviceItems = items.filter(item => !item.isProduct && item.barber);
     const productItems = items.filter(item => item.isProduct);
 
+    // iOS Safari fix: Open window IMMEDIATELY on click to preserve user activation
+    // We'll redirect it to WhatsApp URL after async operations complete
+    const whatsappWindows: Window[] = [];
+    
+    // Pre-open windows for each barber (iOS requires this before async operations)
+    const uniqueBarbers = [...new Map(serviceItems.map(item => [item.barber!.id, item.barber!])).values()];
+    
+    if (uniqueBarbers.length > 0) {
+      uniqueBarbers.forEach(() => {
+        const win = window.open("", "_blank");
+        if (win) whatsappWindows.push(win);
+      });
+    } else if (productItems.length > 0) {
+      // Only products - open one window
+      const win = window.open("", "_blank");
+      if (win) whatsappWindows.push(win);
+    }
+
     // Create bookings in database NOW (only when user clicks "Finalizar no WhatsApp")
     for (const item of serviceItems) {
       if (item.date && item.time && item.barber) {
@@ -182,6 +200,8 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
               .maybeSingle();
 
             if (existingBooking) {
+              // Close all pre-opened windows on error
+              whatsappWindows.forEach(win => win.close());
               toast.error(`Horário ${slotTime} já foi reservado. Por favor, escolha outro horário.`);
               return;
             }
@@ -200,6 +220,8 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
           }
         } catch (error: any) {
           console.error("Error creating booking:", error);
+          // Close all pre-opened windows on error
+          whatsappWindows.forEach(win => win.close());
           // Tratar erro de constraint única (duplicata)
           if (error?.code === "23505" || error?.message?.includes("unique_booking_slot")) {
             toast.error(`Horário já reservado por outro cliente. Por favor, escolha outro horário.`);
@@ -225,6 +247,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     }, {} as Record<string, { barber: Barber; items: CartItem[] }>);
 
     // Send to each barber's WhatsApp (services)
+    let windowIndex = 0;
     Object.values(itemsByBarber).forEach(({ barber, items: barberItems }) => {
       const itemsText = barberItems
         .map((item) => {
@@ -276,7 +299,13 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
 
       const encodedMessage = encodeURIComponent(message);
       const whatsappNumber = barber.whatsapp.replace(/\D/g, '');
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, "_blank");
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+      
+      // Redirect the pre-opened window to WhatsApp
+      if (whatsappWindows[windowIndex]) {
+        whatsappWindows[windowIndex].location.href = whatsappUrl;
+      }
+      windowIndex++;
     });
 
     // If only products (no services), send to a default barber or show message
@@ -301,8 +330,12 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       message += `Aguardo confirmação!`;
 
       const encodedMessage = encodeURIComponent(message);
-      // Use first available barber's WhatsApp or a default number
-      window.open(`https://wa.me/5562991492590?text=${encodedMessage}`, "_blank");
+      const whatsappUrl = `https://wa.me/5562991492590?text=${encodedMessage}`;
+      
+      // Redirect the pre-opened window to WhatsApp
+      if (whatsappWindows[0]) {
+        whatsappWindows[0].location.href = whatsappUrl;
+      }
     }
     
     onFinish();
