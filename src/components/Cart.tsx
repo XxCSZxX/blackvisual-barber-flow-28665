@@ -119,22 +119,22 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     const itemsText = items
       .map((item) => {
         const dateFormatted = format(item.date, "dd/MM/yyyy", { locale: ptBR });
-        const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
-        return `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${item.time}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
+        const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartao";
+        return `*Servico:* ${item.name}\n*Valor:* R$ ${item.price.toFixed(2)}\n*Data:* ${dateFormatted} as ${item.time}\n*Cliente:* ${item.customerName}\n*Pagamento:* ${paymentText}`;
       })
       .join("\n\n");
 
-    let message = `Olá Cruvinel's Barbearia! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
+    let message = `Ola Cruvinel's Barbearia!\n\nQuero confirmar meu agendamento:\n\n${itemsText}\n\n`;
     
     if (appliedCoupon) {
-      message += `💰 Subtotal: R$ ${subtotal.toFixed(2)}\n`;
-      message += `🎟️ Cupom ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
-      message += `💵 Total: R$ ${total.toFixed(2)}\n\n`;
+      message += `*Subtotal:* R$ ${subtotal.toFixed(2)}\n`;
+      message += `*Cupom* ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
+      message += `*Total:* R$ ${total.toFixed(2)}\n\n`;
     } else {
-      message += `💵 Total: R$ ${total.toFixed(2)}\n\n`;
+      message += `*Total:* R$ ${total.toFixed(2)}\n\n`;
     }
     
-    message += `Aguardo confirmação!`;
+    message += `Aguardo confirmacao!`;
 
     return encodeURIComponent(message);
   };
@@ -252,14 +252,14 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       const itemsText = barberItems
         .map((item) => {
           const dateFormatted = item.date ? format(item.date, "dd/MM/yyyy", { locale: ptBR }) : "";
-          const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartão";
+          const paymentText = item.paymentMethod === "pix" ? "PIX" : "Cartao";
           const timeDisplay = item.endTime ? `${item.time} - ${item.endTime}` : item.time;
-          let itemText = `📌 ${item.name}\n💰 R$ ${item.price.toFixed(2)}\n📅 ${dateFormatted} às ${timeDisplay}\n👤 ${item.customerName}\n💳 Pagamento: ${paymentText}`;
+          let itemText = `*Servico:* ${item.name}\n*Valor:* R$ ${item.price.toFixed(2)}\n*Data:* ${dateFormatted} as ${timeDisplay}\n*Cliente:* ${item.customerName}\n*Pagamento:* ${paymentText}`;
           
           if (item.products && item.products.length > 0) {
-            itemText += "\n\n🛍️ Produtos adicionais:";
+            itemText += "\n\n*Produtos adicionais:*";
             item.products.forEach(p => {
-              itemText += `\n  • ${p.name} (${p.quantity}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`;
+              itemText += `\n  - ${p.name} (${p.quantity}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`;
             });
           }
           
@@ -270,8 +270,8 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       // Add products to barber message if any
       let productsText = "";
       if (productItems.length > 0) {
-        productsText = "\n\n🛍️ Produtos:\n" + productItems.map(p => 
-          `  • ${p.name} (${p.quantity || 1}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`
+        productsText = "\n\n*Produtos:*\n" + productItems.map(p => 
+          `  - ${p.name} (${p.quantity || 1}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`
         ).join("\n");
       }
 
@@ -285,17 +285,17 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       const grandTotal = barberTotal + productsOnlyTotal;
       const finalTotal = Math.max(grandTotal - discount, 0);
       
-      let message = `Olá ${barber.name}! 💈\n\nQuero confirmar meu agendamento:\n\n${itemsText}${productsText}\n\n`;
+      let message = `Ola ${barber.name}!\n\nQuero confirmar meu agendamento:\n\n${itemsText}${productsText}\n\n`;
       
       if (appliedCoupon) {
-        message += `💰 Subtotal: R$ ${grandTotal.toFixed(2)}\n`;
-        message += `🎟️ Cupom ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
-        message += `💵 Total: R$ ${finalTotal.toFixed(2)}\n\n`;
+        message += `*Subtotal:* R$ ${grandTotal.toFixed(2)}\n`;
+        message += `*Cupom* ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
+        message += `*Total:* R$ ${finalTotal.toFixed(2)}\n\n`;
       } else {
-        message += `💵 Total: R$ ${grandTotal.toFixed(2)}\n\n`;
+        message += `*Total:* R$ ${grandTotal.toFixed(2)}\n\n`;
       }
       
-      message += `Aguardo confirmação!`;
+      message += `Aguardo confirmacao!`;
 
       const encodedMessage = encodeURIComponent(message);
       const whatsappNumber = barber.whatsapp.replace(/\D/g, '');
@@ -311,23 +311,23 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     // If only products (no services), send to a default barber or show message
     if (serviceItems.length === 0 && productItems.length > 0) {
       const productsText = productItems.map(p => 
-        `🛍️ ${p.name} (${p.quantity || 1}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`
+        `- ${p.name} (${p.quantity || 1}x) - R$ ${(p.price * (p.quantity || 1)).toFixed(2)}`
       ).join("\n");
 
       const productsTotal = productItems.reduce((sum, p) => sum + (p.price * (p.quantity || 1)), 0);
       const finalProductsTotal = Math.max(productsTotal - discount, 0);
       
-      let message = `Olá Cruvinel's Barbearia! 💈\n\nQuero comprar os seguintes produtos:\n\n${productsText}\n\n`;
+      let message = `Ola Cruvinel's Barbearia!\n\nQuero comprar os seguintes produtos:\n\n${productsText}\n\n`;
       
       if (appliedCoupon) {
-        message += `💰 Subtotal: R$ ${productsTotal.toFixed(2)}\n`;
-        message += `🎟️ Cupom ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
-        message += `💵 Total: R$ ${finalProductsTotal.toFixed(2)}\n\n`;
+        message += `*Subtotal:* R$ ${productsTotal.toFixed(2)}\n`;
+        message += `*Cupom* ${appliedCoupon.code}: -R$ ${discount.toFixed(2)}\n`;
+        message += `*Total:* R$ ${finalProductsTotal.toFixed(2)}\n\n`;
       } else {
-        message += `💵 Total: R$ ${productsTotal.toFixed(2)}\n\n`;
+        message += `*Total:* R$ ${productsTotal.toFixed(2)}\n\n`;
       }
       
-      message += `Aguardo confirmação!`;
+      message += `Aguardo confirmacao!`;
 
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/5562991492590?text=${encodedMessage}`;
