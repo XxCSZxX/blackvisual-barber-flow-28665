@@ -136,7 +136,9 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     
     message += `Aguardo confirmacao!`;
 
-    return encodeURIComponent(message);
+    const url = new URL(`https://wa.me/5562991492590`);
+    url.searchParams.set('text', message);
+    return url.toString();
   };
 
   // Helper to get consecutive time slots (matching database format without leading zeros for hours)
@@ -297,13 +299,13 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       
       message += `Aguardo confirmacao!`;
 
-      const encodedMessage = encodeURIComponent(message);
       const whatsappNumber = barber.whatsapp.replace(/\D/g, '');
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+      const url = new URL(`https://wa.me/${whatsappNumber}`);
+      url.searchParams.set('text', message);
       
       // Redirect the pre-opened window to WhatsApp
       if (whatsappWindows[windowIndex]) {
-        whatsappWindows[windowIndex].location.href = whatsappUrl;
+        whatsappWindows[windowIndex].location.href = url.toString();
       }
       windowIndex++;
     });
@@ -329,12 +331,12 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       
       message += `Aguardo confirmacao!`;
 
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/5562991492590?text=${encodedMessage}`;
+      const url = new URL(`https://wa.me/5562991492590`);
+      url.searchParams.set('text', message);
       
       // Redirect the pre-opened window to WhatsApp
       if (whatsappWindows[0]) {
-        whatsappWindows[0].location.href = whatsappUrl;
+        whatsappWindows[0].location.href = url.toString();
       }
     }
     
