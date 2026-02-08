@@ -1,51 +1,46 @@
 
 
-## Corrigir Emojis Quebrados no WhatsApp (Android)
+## Corrigir Emojis no WhatsApp - Abordagem Definitiva
 
 ### Problema
 
-No Android, os emojis na mensagem do WhatsApp aparecem como `�` em vez dos emojis reais (💈, 📌, 💰, etc.).
-
-### Causa
-
-O problema ocorre porque o `window.open` com redirecionamento via `location.href` em alguns navegadores Android não processa corretamente a URL com emojis codificados pelo `encodeURIComponent`. Embora `encodeURIComponent` suporte UTF-8, alguns WebViews Android têm problemas com caracteres multi-byte na URL.
+Tanto `URLSearchParams` quanto `encodeURIComponent` direto na URL nao estao funcionando para emojis no Android. O `URLSearchParams` codifica espacos como `+` e tem problemas com emojis em alguns navegadores Android.
 
 ### Solucao
 
-Substituir os emojis Unicode por equivalentes em texto simples na mensagem do WhatsApp. Isso garante compatibilidade universal em todos os dispositivos (Android, iOS, Desktop) sem depender de codificação de emojis na URL.
+Usar o esquema de URL `intent://` para Android e manter `https://wa.me/` para outros dispositivos. O `intent://` envia a mensagem diretamente para o app do WhatsApp sem passar pelo navegador, evitando problemas de codificacao.
 
-### Mensagem Atual vs. Nova
+**Deteccao de plataforma:** Verificar o User Agent para identificar Android.
 
-| Atual | Nova |
-|-------|------|
-| `Olá Laurin! 💈` | `Ola Laurin!` |
-| `📌 TESTE` | `- Servico: TESTE` |
-| `💰 R$ 85.00` | `- Valor: R$ 85.00` |
-| `📅 09/02/2026` | `- Data: 09/02/2026` |
-| `👤 Nome` | `- Cliente: Nome` |
-| `💳 Pagamento: PIX` | `- Pagamento: PIX` |
-| `💵 Total: R$ 85.00` | `*Total: R$ 85.00*` |
+**Para Android:** Usar `intent://send?phone=NUMERO&text=MENSAGEM#Intent;scheme=whatsapp;package=com.whatsapp;end;`
 
-**Alternativa (preferida):** Manter os emojis mas usar a API do WhatsApp com `intent://` no Android em vez de `https://wa.me/`. No entanto, a solução mais simples e confiável é remover os emojis e usar formatação de texto com asteriscos (*negrito*) que o WhatsApp suporta nativamente.
+**Para iOS/Desktop:** Manter `https://wa.me/NUMERO?text=MENSAGEM` com `encodeURIComponent`.
+
+### Alternativa mais simples (fallback)
+
+Se o `intent://` causar problemas, a alternativa e usar `whatsapp://send?phone=NUMERO&text=MENSAGEM` que funciona em Android e iOS quando o app esta instalado.
 
 ### Arquivos a Modificar
 
 | Arquivo | Alteracao |
 |---------|-----------|
-| `src/components/Cart.tsx` | Substituir emojis por texto simples em todas as mensagens do WhatsApp (linhas ~257, 260, 273, 288-298, e secao de produtos ~316-340) |
+| `src/components/Cart.tsx` | Criar funcao helper `buildWhatsAppUrl(phone, message)` que detecta Android e usa o esquema correto. Substituir todas as construcoes de URL do WhatsApp por esta funcao. |
 
 ### Detalhes Tecnicos
 
-Todas as ocorrencias de emojis nas template strings de mensagem serao substituidas:
-- `💈` -> removido
-- `📌` -> `*Servico:*`
-- `💰` -> `*Valor:*`
-- `📅` -> `*Data:*`
-- `👤` -> `*Cliente:*`
-- `💳` -> `*Pagamento:*`
-- `💵` -> `*Total:*`
-- `🎟️` -> `*Cupom*`
-- `🛍️` -> `*Produtos:*`
+Nova funcao helper no Cart.tsx:
 
-Os asteriscos fazem o texto aparecer em **negrito** no WhatsApp, mantendo a mensagem organizada e legivel.
+```text
+buildWhatsAppUrl(phone: string, message: string): string
+  - Detecta Android via navigator.userAgent
+  - Android: retorna "https://api.whatsapp.com/send?phone=PHONE&text=ENCODED_MESSAGE"
+  - Outros: retorna "https://wa.me/PHONE?text=ENCODED_MESSAGE"
+```
+
+A chave e usar `https://api.whatsapp.com/send` em vez de `https://wa.me/` - o dominio `api.whatsapp.com` tem melhor compatibilidade com emojis em Android porque redireciona diretamente para o app sem processamento adicional do navegador.
+
+Tres pontos de alteracao no codigo:
+1. Funcao `formatWhatsAppMessage` (~linha 136)
+2. Loop de barbeiros com servicos (~linha 303)
+3. Secao de apenas produtos (~linha 334)
 
