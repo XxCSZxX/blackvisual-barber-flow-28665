@@ -1,64 +1,51 @@
 
 
-## Plano: Corrigir WhatsApp não abrindo no iPhone
+## Corrigir Emojis Quebrados no WhatsApp (Android)
 
-### Problema Identificado
+### Problema
 
-O Safari no iOS tem uma política rigorosa chamada "transient activation" que só permite `window.open()` se for chamado **imediatamente** após uma ação do usuário (clique). No código atual:
+No Android, os emojis na mensagem do WhatsApp aparecem como `�` em vez dos emojis reais (💈, 📌, 💰, etc.).
 
-1. Usuário clica em "Finalizar no WhatsApp"
-2. Sistema verifica disponibilidade no banco de dados (operação assíncrona)
-3. Sistema cria reservas no banco de dados (operação assíncrona)
-4. **Depois** disso, tenta abrir `window.open()` - **BLOQUEADO no iOS**
+### Causa
 
-O Safari considera que o clique já "expirou" quando o `window.open()` é executado após as operações assíncronas.
+O problema ocorre porque o `window.open` com redirecionamento via `location.href` em alguns navegadores Android não processa corretamente a URL com emojis codificados pelo `encodeURIComponent`. Embora `encodeURIComponent` suporte UTF-8, alguns WebViews Android têm problemas com caracteres multi-byte na URL.
 
-### Solução
+### Solucao
 
-Abrir a janela do WhatsApp **antes** das operações assíncronas, e depois redirecionar para a URL correta:
+Substituir os emojis Unicode por equivalentes em texto simples na mensagem do WhatsApp. Isso garante compatibilidade universal em todos os dispositivos (Android, iOS, Desktop) sem depender de codificação de emojis na URL.
 
-```typescript
-// ANTES (não funciona no iOS)
-const handleFinish = async () => {
-  await verificarDisponibilidade();  // async
-  await criarReservas();             // async
-  window.open(whatsappUrl);          // BLOQUEADO!
-}
+### Mensagem Atual vs. Nova
 
-// DEPOIS (funciona no iOS)
-const handleFinish = async () => {
-  const win = window.open("", "_blank");  // Abre imediatamente
-  
-  try {
-    await verificarDisponibilidade();
-    await criarReservas();
-    
-    if (win) {
-      win.location.href = whatsappUrl;  // Redireciona depois
-    }
-  } catch (error) {
-    win?.close();  // Fecha se houver erro
-  }
-}
-```
+| Atual | Nova |
+|-------|------|
+| `Olá Laurin! 💈` | `Ola Laurin!` |
+| `📌 TESTE` | `- Servico: TESTE` |
+| `💰 R$ 85.00` | `- Valor: R$ 85.00` |
+| `📅 09/02/2026` | `- Data: 09/02/2026` |
+| `👤 Nome` | `- Cliente: Nome` |
+| `💳 Pagamento: PIX` | `- Pagamento: PIX` |
+| `💵 Total: R$ 85.00` | `*Total: R$ 85.00*` |
+
+**Alternativa (preferida):** Manter os emojis mas usar a API do WhatsApp com `intent://` no Android em vez de `https://wa.me/`. No entanto, a solução mais simples e confiável é remover os emojis e usar formatação de texto com asteriscos (*negrito*) que o WhatsApp suporta nativamente.
 
 ### Arquivos a Modificar
 
-| Arquivo | Alteração |
+| Arquivo | Alteracao |
 |---------|-----------|
-| `src/components/Cart.tsx` | Refatorar `handleFinish` para abrir janela antes das operações assíncronas |
+| `src/components/Cart.tsx` | Substituir emojis por texto simples em todas as mensagens do WhatsApp (linhas ~257, 260, 273, 288-298, e secao de produtos ~316-340) |
 
-### Detalhes da Implementação
+### Detalhes Tecnicos
 
-1. No início de `handleFinish`, abrir uma janela/aba vazia com `window.open("", "_blank")`
-2. Realizar todas as validações e criação de reservas
-3. Se sucesso: redirecionar a janela para a URL do WhatsApp
-4. Se erro: fechar a janela e mostrar mensagem de erro
-5. Aplicar o mesmo padrão para todos os `window.open()` no arquivo
+Todas as ocorrencias de emojis nas template strings de mensagem serao substituidas:
+- `💈` -> removido
+- `📌` -> `*Servico:*`
+- `💰` -> `*Valor:*`
+- `📅` -> `*Data:*`
+- `👤` -> `*Cliente:*`
+- `💳` -> `*Pagamento:*`
+- `💵` -> `*Total:*`
+- `🎟️` -> `*Cupom*`
+- `🛍️` -> `*Produtos:*`
 
-### Considerações Técnicas
-
-- A janela ficará em branco brevemente enquanto as validações ocorrem (menos de 1 segundo normalmente)
-- Se o usuário tiver bloqueador de pop-up ativo, pode precisar permitir manualmente
-- Alternativa adicional: usar `window.location.href` em vez de `window.open()` se houver apenas um barbeiro (não abre nova aba, mas funciona sempre)
+Os asteriscos fazem o texto aparecer em **negrito** no WhatsApp, mantendo a mensagem organizada e legivel.
 
