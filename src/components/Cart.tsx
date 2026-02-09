@@ -59,7 +59,7 @@ const isAndroid = /Android/i.test(navigator.userAgent);
 const buildWhatsAppUrl = (phone: string, message: string): string => {
   const encodedMessage = encodeURIComponent(message);
   if (isAndroid) {
-    return `intent://send/${phone}#Intent;scheme=whatsapp;package=com.whatsapp;S.text=${encodedMessage};end;`;
+    return `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
   }
   return `https://wa.me/${phone}?text=${encodedMessage}`;
 };
