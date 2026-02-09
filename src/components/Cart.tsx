@@ -54,6 +54,25 @@ interface CartProps {
   onAddProducts: (itemId: string, products: Product[]) => void;
 }
 
+const isAndroid = /Android/i.test(navigator.userAgent);
+
+const buildWhatsAppUrl = (phone: string, message: string): string => {
+  const encodedMessage = encodeURIComponent(message);
+  if (isAndroid) {
+    return `intent://send/${phone}#Intent;scheme=whatsapp;package=com.whatsapp;S.text=${encodedMessage};end;`;
+  }
+  return `https://wa.me/${phone}?text=${encodedMessage}`;
+};
+
+const openWhatsApp = (phone: string, message: string, preOpenedWindow?: Window | null) => {
+  const url = buildWhatsAppUrl(phone, message);
+  if (isAndroid) {
+    window.location.href = url;
+  } else if (preOpenedWindow) {
+    preOpenedWindow.location.href = url;
+  }
+};
+
 const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<DiscountCoupon | null>(null);
@@ -136,9 +155,7 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     
     message += `Aguardo confirmacao!`;
 
-    const url = new URL(`https://wa.me/5562991492590`);
-    url.searchParams.set('text', message);
-    return url.toString();
+    return buildWhatsAppUrl('5562991492590', message);
   };
 
   // Helper to get consecutive time slots (matching database format without leading zeros for hours)
@@ -165,21 +182,22 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
     const productItems = items.filter(item => item.isProduct);
 
     // iOS Safari fix: Open window IMMEDIATELY on click to preserve user activation
-    // We'll redirect it to WhatsApp URL after async operations complete
+    // Android uses intent:// which opens app directly via location.href, no pre-opened window needed
     const whatsappWindows: Window[] = [];
     
-    // Pre-open windows for each barber (iOS requires this before async operations)
-    const uniqueBarbers = [...new Map(serviceItems.map(item => [item.barber!.id, item.barber!])).values()];
-    
-    if (uniqueBarbers.length > 0) {
-      uniqueBarbers.forEach(() => {
+    if (!isAndroid) {
+      // Pre-open windows for each barber (iOS requires this before async operations)
+      const uniqueBarbers = [...new Map(serviceItems.map(item => [item.barber!.id, item.barber!])).values()];
+      
+      if (uniqueBarbers.length > 0) {
+        uniqueBarbers.forEach(() => {
+          const win = window.open("", "_blank");
+          if (win) whatsappWindows.push(win);
+        });
+      } else if (productItems.length > 0) {
         const win = window.open("", "_blank");
         if (win) whatsappWindows.push(win);
-      });
-    } else if (productItems.length > 0) {
-      // Only products - open one window
-      const win = window.open("", "_blank");
-      if (win) whatsappWindows.push(win);
+      }
     }
 
     // Create bookings in database NOW (only when user clicks "Finalizar no WhatsApp")
@@ -300,13 +318,9 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       message += `Aguardo confirmacao!`;
 
       const whatsappNumber = barber.whatsapp.replace(/\D/g, '');
-      const url = new URL(`https://wa.me/${whatsappNumber}`);
-      url.searchParams.set('text', message);
       
-      // Redirect the pre-opened window to WhatsApp
-      if (whatsappWindows[windowIndex]) {
-        whatsappWindows[windowIndex].location.href = url.toString();
-      }
+      // Use helper to open WhatsApp (intent:// on Android, pre-opened window on iOS/Desktop)
+      openWhatsApp(whatsappNumber, message, whatsappWindows[windowIndex] || null);
       windowIndex++;
     });
 
@@ -331,13 +345,8 @@ const Cart = ({ items, onRemoveItem, onFinish, onAddProducts }: CartProps) => {
       
       message += `Aguardo confirmacao!`;
 
-      const url = new URL(`https://wa.me/5562991492590`);
-      url.searchParams.set('text', message);
-      
-      // Redirect the pre-opened window to WhatsApp
-      if (whatsappWindows[0]) {
-        whatsappWindows[0].location.href = url.toString();
-      }
+      // Use helper to open WhatsApp
+      openWhatsApp('5562991492590', message, whatsappWindows[0] || null);
     }
     
     onFinish();
