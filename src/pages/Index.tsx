@@ -221,58 +221,87 @@ const Index = () => {
       <Hero />
 
       {/* Services Section */}
-      <section id="servicos" className="py-16 md:py-24">
+      <section id="servicos" className="py-20 bg-gradient-to-b from-card to-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-10 md:mb-14">
-            <span className="text-xs tracking-[0.3em] uppercase text-primary/70 font-medium mb-3 block">
-              Nossos serviços
-            </span>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight" style={{ lineHeight: "1.1" }}>
-              Escolha seu estilo
-            </h2>
+          <div className="text-center mb-8 md:mb-12 animate-fade-in">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-3 md:mb-4">Nossos Serviços</h2>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+              Escolha seu corte e agende online em poucos cliques
+            </p>
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-10 md:mb-14 max-w-4xl mx-auto">
-            {[
-              { key: "corte-masculino", label: "Cortes" },
-              { key: "barba", label: "Barba" },
-              { key: "sombrancelha", label: "Sombrancelha" },
-              { key: "depilacao", label: "Depilação" },
-              { key: "produtos-consumiveis", label: "Produtos" },
-            ].map((cat) => (
-              <button
-                key={cat.key}
-                onClick={() => setSelectedCategory(cat.key)}
-                className={`px-5 md:px-6 py-2.5 md:py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                  selectedCategory === cat.key
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                    : "bg-secondary text-secondary-foreground hover:bg-muted"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 md:mb-12 max-w-4xl mx-auto">
+            <button
+              onClick={() => setSelectedCategory("corte-masculino")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "corte-masculino"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Corte Masculino
+            </button>
+            <button
+              onClick={() => setSelectedCategory("barba")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "barba"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Barba
+            </button>
+            <button
+              onClick={() => setSelectedCategory("sombrancelha")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "sombrancelha"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Sombrancelha
+            </button>
+            <button
+              onClick={() => setSelectedCategory("depilacao")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "depilacao"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Depilação
+            </button>
+            <button
+              onClick={() => setSelectedCategory("produtos-consumiveis")}
+              className={`px-6 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm md:text-base transition-all ${
+                selectedCategory === "produtos-consumiveis"
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground hover:bg-muted"
+              }`}
+            >
+              Produtos Consumíveis
+            </button>
           </div>
 
           {/* Services Grid */}
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {services
                 .filter((s) => s.category === selectedCategory)
                 .map((service, index) => (
                   <div
                     key={service.slug}
                     className="animate-fade-in"
-                    style={{ animationDelay: `${index * 80}ms` }}
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <ServiceCard {...service} onSelect={handleSelectService} />
                   </div>
                 ))}
             </div>
             {services.filter((s) => s.category === selectedCategory).length === 0 && (
-              <div className="text-center py-16">
-                <p className="text-muted-foreground">
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">
                   Nenhum serviço disponível nesta categoria ainda.
                 </p>
               </div>
@@ -282,30 +311,27 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section id="sobre" className="py-16 md:py-24 relative">
-        <div className="absolute inset-0 bg-card" />
-        <div className="relative container mx-auto px-4 text-center max-w-3xl">
-          <span className="text-xs tracking-[0.3em] uppercase text-primary/70 font-medium mb-3 block">
-            Sobre nós
-          </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-6" style={{ lineHeight: "1.1" }}>
-            Cruvinel's Barbearia
-          </h2>
-          <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-10" style={{ textWrap: "balance" as any }}>
-            Barbearia premium especializada em cortes masculinos modernos,
-            oferecendo atendimento de qualidade e ambiente exclusivo em Goiânia&nbsp;–&nbsp;GO.
+      <section id="sobre" className="py-20 bg-card">
+        <div className="container mx-auto px-4 text-center max-w-4xl">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6">Sobre a Cruvinel's Barbearia</h2>
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-6 md:mb-8">
+            Somos uma barbearia premium especializada em cortes masculinos modernos,
+            oferecendo atendimento de qualidade e ambiente exclusivo para homens que
+            buscam estilo e profissionalismo em Goiás/Goiânia - GO.
           </p>
-          <div className="grid grid-cols-3 gap-4 md:gap-8">
-            {[
-              { value: "5+", label: "Anos" },
-              { value: "1000+", label: "Clientes" },
-              { value: "100%", label: "Qualidade" },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-secondary/50 rounded-2xl py-6 px-3 border-depth">
-                <div className="text-2xl md:text-4xl font-black text-primary tabular-nums">{stat.value}</div>
-                <p className="text-xs md:text-sm text-muted-foreground mt-1">{stat.label}</p>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
+            <div className="space-y-2">
+              <div className="text-3xl md:text-4xl font-black text-foreground">5+</div>
+              <p className="text-sm md:text-base text-muted-foreground">Anos de experiência</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl md:text-4xl font-black text-foreground">1000+</div>
+              <p className="text-sm md:text-base text-muted-foreground">Clientes satisfeitos</p>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl md:text-4xl font-black text-foreground">100%</div>
+              <p className="text-sm md:text-base text-muted-foreground">Profissionalismo</p>
+            </div>
           </div>
         </div>
       </section>

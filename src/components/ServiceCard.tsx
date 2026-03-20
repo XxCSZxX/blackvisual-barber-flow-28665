@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
 
 interface ServiceCardProps {
   title: string;
@@ -12,43 +11,37 @@ interface ServiceCardProps {
 
 const ServiceCard = ({ title, description, price, image, slug, onSelect }: ServiceCardProps) => {
   return (
-    <div className="card-3d group relative bg-card rounded-2xl overflow-hidden border-depth">
-      {/* Image */}
-      <div className="aspect-[4/3] overflow-hidden relative">
+    <div className="card-3d group relative bg-card rounded-3xl overflow-hidden border border-border/50 hover:border-accent/40 transition-all duration-500">
+      <div className="aspect-square overflow-hidden relative">
         <img
           src={image}
           alt={title}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-115 group-hover:rotate-1"
         />
-        {/* Bottom fade */}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-card to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
       </div>
 
-      {/* Content */}
-      <div className="p-5 md:p-6 space-y-3 -mt-6 relative z-10">
+      <div className="p-4 md:p-6 space-y-3 md:space-y-4">
         <div>
-          <h3 className="text-lg md:text-xl font-bold text-foreground mb-1 leading-tight overflow-wrap-break-word">
-            {title}
-          </h3>
-          <p className="text-muted-foreground text-xs md:text-sm line-clamp-2">{description}</p>
+          <h3 className="text-xl md:text-2xl font-bold text-foreground mb-1 md:mb-2 group-hover:text-accent transition-colors duration-300 break-words">{title}</h3>
+          <p className="text-muted-foreground text-xs md:text-sm line-clamp-2 break-words">{description}</p>
         </div>
 
-        <div className="flex items-center justify-between pt-1">
-          <div>
-            <span className="text-xs text-muted-foreground block">A partir de</span>
-            <span className="text-primary text-2xl md:text-3xl font-black tabular-nums">
-              R$ {price.toFixed(2)}
-            </span>
-          </div>
+        <div className="flex items-center justify-between pt-1 md:pt-2">
+          <span className="text-foreground text-2xl md:text-3xl font-black drop-shadow-[0_3px_15px_rgba(255,255,255,0.3)]">
+            R$ {price.toFixed(2)}
+          </span>
           <Button
             onClick={() => onSelect(slug)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold rounded-xl px-5 py-5 text-sm btn-3d group/btn active:scale-[0.96]"
+            className="bg-accent text-accent-foreground hover:bg-accent/95 font-bold rounded-xl px-4 md:px-6 py-4 md:py-5 text-sm md:text-base btn-3d hover:scale-105 transition-all"
           >
             Escolher
-            <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover/btn:translate-x-0.5" />
           </Button>
         </div>
       </div>
+
+      {/* 3D depth glow effect */}
+      <div className="absolute inset-0 bg-gradient-to-t from-accent/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
     </div>
   );
 };
