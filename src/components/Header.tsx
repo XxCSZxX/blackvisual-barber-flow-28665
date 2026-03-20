@@ -13,19 +13,19 @@ const Header = () => {
     <>
       <button
         onClick={() => scrollToSection("servicos")}
-        className="text-foreground hover:text-accent transition-colors"
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
       >
         Serviços
       </button>
       <button
         onClick={() => scrollToSection("sobre")}
-        className="text-foreground hover:text-accent transition-colors"
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
       >
         Sobre
       </button>
       <button
         onClick={() => scrollToSection("contato")}
-        className="text-foreground hover:text-accent transition-colors"
+        className="text-muted-foreground hover:text-foreground transition-colors text-sm tracking-wide"
       >
         Contato
       </button>
@@ -33,44 +33,40 @@ const Header = () => {
   );
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border shadow-lg shadow-accent/5">
-      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between relative">
-        {/* 3D depth line effect */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent"></div>
-        <div className="flex items-center gap-4 md:gap-8">
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-foreground tracking-tighter">
-            Cruvinel's Barbearia
+    <header className="fixed top-0 left-0 right-0 z-40 glass">
+      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
+        <div className="flex items-center gap-6 md:gap-10">
+          <h1 className="text-lg md:text-xl font-black text-foreground tracking-tight">
+            Cruvinel's
           </h1>
-          
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-6 text-sm lg:text-base">
+
+          <nav className="hidden md:flex items-center gap-6 text-sm">
             <NavLinks />
           </nav>
         </div>
 
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-3">
           <Link
             to="/admin"
-            className="text-muted-foreground hover:text-accent transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Admin"
           >
-            <Settings className="w-5 h-5 md:w-6 md:h-6" />
+            <Settings className="w-4 h-4 md:w-5 md:h-5" />
           </Link>
-          
+
           <a
             href="https://instagram.com/cruvinelsbarbearia"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foreground hover:text-accent transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Instagram"
           >
-            <Instagram className="w-5 h-5 md:w-6 md:h-6" />
+            <Instagram className="w-4 h-4 md:w-5 md:h-5" />
           </a>
 
-          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>

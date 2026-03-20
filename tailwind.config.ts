@@ -85,11 +85,11 @@ export default {
           "100%": { transform: "rotate(360deg)" },
         },
         "fade-in": {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
+          "0%": { opacity: "0", transform: "translateY(16px)", filter: "blur(4px)" },
+          "100%": { opacity: "1", transform: "translateY(0)", filter: "blur(0)" },
         },
         "scale-in": {
-          "0%": { opacity: "0", transform: "scale(0.9)" },
+          "0%": { opacity: "0", transform: "scale(0.95)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
         "slide-in-right": {
@@ -100,10 +100,6 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(100%)" },
         },
-        "typing": {
-          "0%": { width: "0" },
-          "100%": { width: "100%" },
-        },
         "blink": {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0" },
@@ -113,19 +109,18 @@ export default {
           "100%": { strokeDashoffset: "0" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(255, 215, 0, 0.4)" },
-          "50%": { boxShadow: "0 0 40px rgba(255, 215, 0, 0.8)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(38 92% 55% / 0.3)" },
+          "50%": { boxShadow: "0 0 40px hsl(38 92% 55% / 0.6)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "spin-slow": "spin-slow 3s linear infinite",
-        "fade-in": "fade-in 0.6s ease-out",
-        "scale-in": "scale-in 0.4s ease-out",
-        "slide-in-right": "slide-in-right 0.4s ease-out",
-        "slide-out-right": "slide-out-right 0.4s ease-out",
-        "typing": "typing 3s steps(40) 1s 1 normal both",
+        "fade-in": "fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "scale-in": "scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-in-right": "slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+        "slide-out-right": "slide-out-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
         "blink": "blink 1s step-end infinite",
         "check-draw": "check-draw 0.8s ease-out forwards",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
